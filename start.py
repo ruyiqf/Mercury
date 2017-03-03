@@ -16,6 +16,8 @@
 import click
 import os
 
+from vob import CommodityFuture
+
 @click.group()
 @click.option('-v', '--verbose', count=True)
 @click.pass_context
@@ -27,11 +29,14 @@ def entry_point():
 
 @cli.command()
 @click.option('-d', '--data-bundle-path', default=os.path.expanduser("~/.mercury"), type=click.Path(file_okay=False))
-def update_bundle(data_bundle_path, locale):
+def update_bundle(data_bundle_path):
     """
     Sync Data Bundle of commodity future data specially
     """
     click.echo('will start from here')
+    cf = CommodityFuture()
+    cf.update_bundle(data_bundle_path=data_bundle_path)
+    
 
 if __name__ == '__main__':
     entry_point()
