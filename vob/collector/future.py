@@ -12,11 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import os
 import click
 import datetime
 import tempfile
-import request
+import tarfile
+import requests
+import shutil
 
 class CommodityFuture(object):
 
@@ -43,3 +46,27 @@ Are you sure to continue?""".format(data_bundle_path=data_bundle_path), abort=Tr
         day = datetime.date.today()
         tmp = os.path.join(tempfile.gettempdir(), 'mercury.bundle')
 
+        while True:
+            url = 'http://www.ruyiqf.com:8083/bundles_v2/mercury_%04d%02d%02d.tar.bz2' % (day.year, day.month, day.day)
+            click.echo(url)
+            r = requests.get(url, stream=True)
+            if r.status_code != 200:
+                day = day - datetime.timedelta(days=1)
+                continue
+
+            out = open(tmp, 'wb')
+            total_length = int(r.headers.get('content-length'))
+
+            with click.progressbar(length=total_length, label=('downloading ...')) as bar:
+                for data in r.iter_content(chunk_size=8192):
+                    bar.update(len(data))
+                    out.write(data)
+            out.close()
+            break
+
+        shutil.rmtree(data_bundle_path, ignore_errors=True)
+        os.makedirs(data_bundle_path)
+        tar = tarfile.open(tmp, 'r:bz2')
+        tar.extractall(data_bundle_path)
+        tar.close()
+        os.remove(tmp)
