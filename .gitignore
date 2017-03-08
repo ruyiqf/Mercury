@@ -68,3 +68,10 @@ target/
 *.iml
 out
 gen
+
+# Data files
+*.bcolz
+*.pk
+*.csv
+vob/collector/basic_data/emercury_f_data*
+

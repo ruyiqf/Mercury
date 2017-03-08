@@ -1,5 +1,6 @@
 #coding:utf-8
 
+import os
 import pickle
 import json
 import pandas as pd
@@ -130,10 +131,47 @@ class CreateBasicInstruments(object):
     def check_data_reasonable(self, price):
         return price if (price < INFINITE and price > NEGINFINITE) else None
         
-    def accumulate_wind_ticker(self):
-        """Clean data from wind"""
-        pass
+    def accumulate_wind_ticker(self, csvpath, path):
+        """Clean data from wind
+        :csvpath: csv file directory path
+        :path: output file path
+        """
+        allfiles = os.listdir(csvpath)
+        whole_wind_df = collections.defaultdict(pd.DataFrame)
+        for elt in allfiles:
+            tmplist = elt.split('.')
+            contract = tmplist[0]
+            df = pd.read_csv(os.path.join('%s%s'%(csvpath, elt)))
+            df = df.dropna()
+            df = df.reset_index()
+            print(df)
+            ctid = contract[0:-4] if contract[-4].isdigit() else contract[0:-3]
+            df['exchange'] = self.ctidmap[ctid]['exchange']
+            df['symbol'] = contract
+            df['last'] = None
+            df['bid'] = None
+            df['ask'] = None
+            df['uppderlimit'] = None
+            df['lowderlimit'] = None
+            df['bidvolume'] = None
+            df['askvolume'] = None
+            whole_wind_df[elt] = df
 
+        #Compress to bcolz file
+        instrument_pos = collections.defaultdict(list)
+        all_instruments = pd.DataFrame()
+        for elt in whole_wind_df:
+            df = whole_wind_df[elt]
+            instrument_pos[elt].append(df.index[0]+len(all_instruments.index))
+            instrument_pos[elt].append(df.index[-1]+len(all_instruments.index))
+            all_instruments = pd.concat([all_instruments, df], ignore_index=True)
+
+        ct = bcolz.ctable.fromdataframe(all_instruments)
+        ct.copy(rootdir=path+'wdbasic.bcolz')
+
+        attr_futures = bcolz.attrs.attrs(path+'wdbasic.bcolz', 'wb')
+        attr_futures['line_map'] = instrument_pos
+        
 """
 Testing code
 """
@@ -141,10 +179,9 @@ def main():
     cb = CreateBasicInstruments()
     #output = open('instruments.pk', 'wb')
     #pickle.dump(cb.ctidmap, output, -1)
-    cb.parse_daily_ticker()
+    #cb.parse_daily_ticker()
+    cb.accumulate_wind_ticker('/Users/ruyiqf/winddata/csv/', '/Users/ruyiqf/winddata/')
 
 if __name__ == '__main__':
     main()
-
-
 
