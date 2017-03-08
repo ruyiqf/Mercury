@@ -14,21 +14,6 @@ Unitize data format together with wind and europa
 [date:pd.DatetimeIndex, open, high, last, volume, amt, chg, pct_chg, oi, symbol, exchange, close,
  bid, ask, upperlimit, lowderlimit, bidvolume, askvolume]
 """
-class Data(object):
-
-    def __init__(self):
-        self.product = 'Commodity'
-        self.margin_rate = 0.0
-        self.exchange = ''
-        self.underlying_symbol = ''
-        self.type = 'Future'
-        self.order_book_id = ''
-        self.maturity_date = ''
-        self.contract_multiplier = 0.0
-        self.de_listed_date = ''
-        self.listed_date = ''
-        self.round_lot = 1.0
-
 class CreateBasicInstruments(object):
 
     def __init__(self):
@@ -39,14 +24,15 @@ class CreateBasicInstruments(object):
         self.whole_q_df = collections.defaultdict(pd.DataFrame)
         self.whole_q_dict = collections.defaultdict(dict)
 
-    def parse_daily_ticker(self):
-        """Parse data from daily server record data"""
-        #This will be added time stamp but now is only for testing
-        with open('emercury_f_data', 'r') as f:
+    def parse_daily_ticker(self, path):
+        """Parse data from daily server record data
+        :path: Daily data path
+        """
+        with open(path+'emercury_f_data.%s'%(datetime.datetim.now().strftime('%Y-%m-%d')), 'r') as f:
             line = f.readline()
             while line:
                 line = line.strip()
-                tmpret = self.convert_list_2_dict(line.split('|'))
+                tmpret = self.convert_list_2_dict(line.split(','))
                 self.assemble_whole_dataframe(tmpret)
                 line = f.readline()
 
@@ -60,22 +46,40 @@ class CreateBasicInstruments(object):
             all_instruments = pd.concat([all_instruments, df], ignore_index=True)
 
         ct = bcolz.ctable.fromdataframe(all_instruments)
-        ct.copy(rootdir='/Users/ruyiqf/mercury/Mercury/vob/collector/basic_data/futures.bcolz')
+        ct.copy(rootdir=path+'futures.bcolz')
 
-        attr_futures = bcolz.attrs.attrs('/Users/ruyiqf/mercury/Mercury/vob/collector/basic_data/futures.bcolz', 'wb')
+        attr_futures = bcolz.attrs.attrs(path+'futures.bcolz', 'wb')
         attr_futures['line_map'] = instrument_pos
         
     def convert_list_2_dict(self, datalist):
         """Convert list to dict which will be used in future
-        :datalist: ['xxx:xxx', 'xxx:xxx',....]
+        :datalist: ['xxx', 'xxx',....]
+        Fixed data format:
+        symbol,open,exchange,lastprice,high,preclose,low,
+        volume,bid,ask,date,time,openinterest,uppderlimit,lowderlimit,
+        bidvolume,askvolume
         """
-        ret = dict()
-        for elt in datalist:
-            elt_list = elt.split(':')
-            ret[elt_list[0]] = elt_list[1]
+        ret = dict(
+            symbol=datalist[0],
+            open=datalist[1],
+            exchange=datalist[2],
+            lastprice=datalist[3],
+            high=datalist[4],
+            preclose=datalist[5],
+            low=datalist[6],
+            volume=datalist[7],
+            bid=datalist[8],
+            ask=datalist[9],
+            date=datalist[10],
+            time=datalist[11],
+            openinterest=datalist[12],
+            uppderlimit=datalist[13],
+            lowderlimit=datalist[14],
+            bidvolume=datalist[15],
+            askvolume=datalist[16]
+        )
         return ret
             
-    
     def assemble_whole_dataframe(self, one_q_record):
         """Assemble partly result to seperated dataframe
         :one_q_record: dictory format
