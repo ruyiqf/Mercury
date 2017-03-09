@@ -3,6 +3,8 @@
 import os
 import pickle
 import json
+import tarfile
+import tempfile
 import pandas as pd
 import collections
 import bcolz
@@ -24,12 +26,14 @@ class CreateBasicInstruments(object):
 
         self.whole_q_df = collections.defaultdict(pd.DataFrame)
         self.whole_q_dict = collections.defaultdict(dict)
+        self.whole_wind_df = collections.defaultdict(pd.DataFrame)
+        self.whole_wind_q_df = collections.defaultdict(pd.DataFrame)
 
     def parse_daily_ticker(self, path):
         """Parse data from daily server record data
-        :path: Daily data path
+        :path: Daily ticker data path include filename
         """
-        with open(path+'emercury_f_data.%s'%(datetime.datetim.now().strftime('%Y-%m-%d')), 'r') as f:
+        with open(path, 'r') as f:
             line = f.readline()
             while line:
                 line = line.strip()
@@ -37,20 +41,9 @@ class CreateBasicInstruments(object):
                 self.assemble_whole_dataframe(tmpret)
                 line = f.readline()
 
-        all_instruments = pd.DataFrame()
-        instrument_pos = collections.defaultdict(list)
-
         for elt in self.whole_q_dict:
             df = pd.DataFrame(self.whole_q_dict[elt])
-            instrument_pos[elt].append(df.index[0]+len(all_instruments.index))
-            instrument_pos[elt].append(df.index[-1]+len(all_instruments.index))
-            all_instruments = pd.concat([all_instruments, df], ignore_index=True)
-
-        ct = bcolz.ctable.fromdataframe(all_instruments)
-        ct.copy(rootdir=path+'futures.bcolz')
-
-        attr_futures = bcolz.attrs.attrs(path+'futures.bcolz', 'wb')
-        attr_futures['line_map'] = instrument_pos
+            self.whole_q_df [elt] = df
         
     def convert_list_2_dict(self, datalist):
         """Convert list to dict which will be used in future
@@ -131,20 +124,109 @@ class CreateBasicInstruments(object):
     def check_data_reasonable(self, price):
         return price if (price < INFINITE and price > NEGINFINITE) else None
         
-    def accumulate_wind_ticker(self, csvpath, path):
+    def infusion_wind_daily_once(self, path, csvpath, outpath):
+        """Merge wind daily ticker once time
+        :path: Daily ticker data path
+        :csvpath: Wind data csv path
+        :outpath: Compress data path
+        """
+        self.parse_daily_ticker(path)
+        self.accumulate_wind_ticker(csvpath)
+        for elt in self.whole_wind_df:
+            if elt in self.whole_q_df:
+                self.whole_wind_q_df[elt] = pd.concat([self.whole_wind_df[elt],
+                                                       self.whole_q_df[elt]],
+                                                       ignore_index=True)
+                                                      
+            else:
+                self.whole_wind_q_df[elt] = self.whole_wind_df[elt]
+        
+        self._generate_bcolzdata(self.whole_wind_q_df, outpath)
+
+    def _generate_instrument_pk(self, whole_df, outpath):
+        """According to whole df, generate pickle data for instruments
+        :whole_df: dict include instrument symbol and df data
+        :outpath: output data path
+        """
+        final_instrupk = collections.defaultdict(dict)
+        for elt in whole_df:
+            ctid = elt[0:-4] if elt[-4].isdigit() else elt[0:-3]
+            final_instrupk[elt] = self.ctidmap[ctid]
+            final_instrupk[elt]['order_book_id'] = elt
+            final_instrupk[elt]['de_listed_date'] = list(whole_df[elt].date)[0]
+            final_instrupk[elt]['listed_date'] = list(whole_df[elt].date)[-1]
+
+        output = open(outpath+'instruments.pk', 'wb')
+        pickle.dump(final_instrupk, output, -1)
+
+    def infusion_increasing(self, path, bz2filepath):
+        """Merge daily ticker data with previous day
+        :path: Daily ticker data path
+        "bz2filepath: Previous day data path
+        """
+        dnow = (datetime.datetime.now()-datetime.timedelta(days=1)).strftime('%Y-%d-%m')
+        if os.path.exists(path+'.'+dnow):
+            self.parse_daily_ticker(path+'.'+dnow)
+            tar = tarfile.open(bz2filepath, 'r:bz2')
+            tar.extractall()
+            tar.close()
+            try:
+                table = bcolz.open('futures.bcolz', 'r')
+                index = table.attrs['line_map']
+                old_table = collections.defaultdict(pd.DataFrame)
+                for elt in index:
+                    s,e = index[elt]
+                    old_table[elt] = pd.DataFram(table[s:e])
+                #Merge new dict
+                for elt in self.whole_q_df:
+                    if elt in old_table:
+                        old_table[elt] = pd.concat(old_table[elt],
+                                                   self.whole_q_df[elt],
+                                                   ignore_index=True)
+                self._generate_bcolzdata(old_table, os.path.join(os.path.abspath('.'), 'data'))
+
+            except Exception as e:
+                print('Can not find futures.bcolz fine')
+                
+        else:
+            print('Data file not exists')
+            return 
+        
+    def _generate_bcolzdata(self, whole_dict, outpath):
+        """Generate bcolzdata and instrument pickle file
+        :whole_dict: raw data
+        :outpath: output data path
+        """
+        all_instruments = pd.DataFrame()
+        instrument_pos = collections.defaultdict(list)
+
+        df_list = list()
+        cursor = 0
+        for elt in whole_dict:
+            df = whole_dict[elt]
+            instrument_pos[elt].append(df.index[0]+cursor)
+            instrument_pos[elt].append(df.index[-1]+1+cursor)
+            cursor += len(df.index)
+            df_list.append(df)
+
+        all_instruments = pd.concat(df_list, ignore_index=True)
+        ct = bcolz.ctable.fromdataframe(all_instruments)
+        ct.copy(rootdir=outpath+'futures.bcolz')
+        attr_futures = bcolz.attrs.attrs(path+'futures.bcolz', 'wb')
+        attr_futures['line_map'] = instrument_pos
+        self._generate_instrument_pk(whole_dict, outpath)
+
+    def accumulate_wind_ticker(self, csvpath):
         """Clean data from wind
         :csvpath: csv file directory path
-        :path: output file path
         """
         allfiles = os.listdir(csvpath)
-        whole_wind_df = collections.defaultdict(pd.DataFrame)
         for elt in allfiles:
             tmplist = elt.split('.')
             contract = tmplist[0]
             df = pd.read_csv(os.path.join('%s%s'%(csvpath, elt)))
             df = df.dropna()
             df = df.reset_index()
-            print(df)
             ctid = contract[0:-4] if contract[-4].isdigit() else contract[0:-3]
             df['exchange'] = self.ctidmap[ctid]['exchange']
             df['symbol'] = contract
@@ -155,22 +237,7 @@ class CreateBasicInstruments(object):
             df['lowderlimit'] = None
             df['bidvolume'] = None
             df['askvolume'] = None
-            whole_wind_df[elt] = df
-
-        #Compress to bcolz file
-        instrument_pos = collections.defaultdict(list)
-        all_instruments = pd.DataFrame()
-        for elt in whole_wind_df:
-            df = whole_wind_df[elt]
-            instrument_pos[elt].append(df.index[0]+len(all_instruments.index))
-            instrument_pos[elt].append(df.index[-1]+len(all_instruments.index))
-            all_instruments = pd.concat([all_instruments, df], ignore_index=True)
-
-        ct = bcolz.ctable.fromdataframe(all_instruments)
-        ct.copy(rootdir=path+'wdbasic.bcolz')
-
-        attr_futures = bcolz.attrs.attrs(path+'wdbasic.bcolz', 'wb')
-        attr_futures['line_map'] = instrument_pos
+            self.whole_wind_df[elt] = df
         
 """
 Testing code
