@@ -36,6 +36,24 @@ def update_bundle(data_bundle_path):
     click.echo('will start from here')
     cf = CommodityFuture()
     cf.update_bundle(data_bundle_path=data_bundle_path)
+
+@click.command()
+@click.help_option('-h', '--help')
+
+@click.option('-d', '--data-bundle-path', 'base_data_bundle_path', type=click.Path(exists=True))
+@click.option('--progress/--no-progress', 'mod_progress__enabled', default=None, help="show progress bar")
+@click.option('-f', '--strategy-dir', 'base_strategies_dir', type=click.Path(exists=True))
+@click.option('-s', '--start-date', 'base_start_date', type=Date())
+@click.option('-e', '--end-date', 'base_end_date', type=Date())
+@click.option('-ic', '--initial-cash', 'base_initial_starting_cash', type=click.FLOAT)
+def run(**kwargs):
+    """
+    Start to run a strategy
+    """
+    cf = CommodityFuture()
+    cf.run(kwargs)
+     
+    
     
 
 if __name__ == '__main__':
