@@ -1,1 +1,1 @@
-from .collector import CommodityFuture
+from .future import CommodityFuture

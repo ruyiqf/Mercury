@@ -37,15 +37,15 @@ def update_bundle(data_bundle_path):
     cf = CommodityFuture()
     cf.update_bundle(data_bundle_path=data_bundle_path)
 
-@click.command()
+@cli.command()
 @click.help_option('-h', '--help')
-
-@click.option('-d', '--data-bundle-path', 'base_data_bundle_path', type=click.Path(exists=True))
-@click.option('--progress/--no-progress', 'mod_progress__enabled', default=None, help="show progress bar")
-@click.option('-f', '--strategy-dir', 'base_strategies_dir', type=click.Path(exists=True))
-@click.option('-s', '--start-date', 'base_start_date', type=Date())
-@click.option('-e', '--end-date', 'base_end_date', type=Date())
-@click.option('-ic', '--initial-cash', 'base_initial_starting_cash', type=click.FLOAT)
+@click.option('-d', '--data-bundle-path', type=click.Path(exists=True))
+@click.option('--progress/--no-progress', default=None, help="show progress bar")
+@click.option('-f', '--strategy-dir', type=click.Path(exists=True))
+@click.option('-s', '--start-date', type=click.STRING)
+@click.option('-e', '--end-date', type=click.STRING)
+@click.option('-ic', '--initial-cash', type=click.FLOAT)
+@click.option('-fq', '--frequency', default=None, type=click.STRING)
 def run(**kwargs):
     """
     Start to run a strategy
@@ -53,8 +53,5 @@ def run(**kwargs):
     cf = CommodityFuture()
     cf.run(kwargs)
      
-    
-    
-
 if __name__ == '__main__':
     entry_point()

@@ -26,6 +26,18 @@ class CommodityFuture(object):
     def __init__(self):
         pass
 
+    def run(self, config):
+        """Run strategy main function
+        """
+         
+        print(config.data_bundle_path)
+        print(config.strategy_dir)
+        print(config.start_date)
+        print(config.end_date)
+        print(config.initial_cash)
+        print(config.frequency)
+        
+
     def update_bundle(self, data_bundle_path=None, confirm=True):
         default_bundle_path = os.path.abspath(os.path.expanduser('~/.mercury/bundle/'))
         if data_bundle_path is None:
