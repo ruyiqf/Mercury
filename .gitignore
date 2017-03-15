@@ -73,5 +73,3 @@ gen
 *.bcolz
 *.pk
 *.csv
-vob/collector/basic_data/emercury_f_data*
-
