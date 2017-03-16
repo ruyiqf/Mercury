@@ -18,5 +18,57 @@ class Account(object):
 
         #Portfolios seperated from strategies
         self._portfolios = collections.defaultdic(Portfolio)
+        
+        self._static_equity = self._init_cash
+        self._dynamic_equity = self._init_cash
+        self._total_pnl = 0
+        self._total_margin = 0
+        self._total_commission = 0
+        self._available_cash = self._init_cash
+        self._risk_measure = 0
+        
+    @property
+    def static_equity(self):
+        return self._static_equity
+    
+    @property
+    def dynamic_equity(self):
+        return self._dynamic_equity
 
+    @property
+    def margin(self)
+        return self._total_margin
+
+    @property
+    def pnl(self):
+        return self._total_pnl
+    
+    @property
+    def commission(self):
+        return self._total_commission
+    
+    @property
+    def available(self):
+        return self._available_cash
+
+    @property
+    def rick_measure(self):
+        return self._risk_measure
+
+    def settlement(self):
+        """Settlement is the function from top to bottom aimed to settle all portfolios"""
+        pass
+
+    def update_account(self):
+        self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
+        self._total_pnl = sum([v.pnl for v in self.portfolios.values()]
+        self._total_margin = sum([v.margin for v in self.portfolios.values()]
+        self._total_commission = sum([v.commission for v in self.portfolios.values()]
+        self._risk_measure = self._total_margin / self._dynamic_equity
+
+    def update_available(self, delta_margin):
+        """For portfolio available_cash is viewing, so need this interface
+        :delta_margin: change of margin in portfolio
+        """
+        self._available_cash += delta_margin
         
