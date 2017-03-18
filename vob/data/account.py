@@ -55,15 +55,16 @@ class Account(object):
     def rick_measure(self):
         return self._risk_measure
 
-    def settlement(self):
+    def settlement(self, bardict):
         """Settlement is the function from top to bottom aimed to settle all portfolios"""
-        pass
+        for elt in self.portfolios:
+            self.portfolios[elt].process_settle(bardict)
 
     def update_account(self):
-        self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
         self._total_pnl = sum([v.pnl for v in self.portfolios.values()]
         self._total_margin = sum([v.margin for v in self.portfolios.values()]
         self._total_commission = sum([v.commission for v in self.portfolios.values()]
+        self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
         self._risk_measure = self._total_margin / self._dynamic_equity
 
     def update_available(self, delta_margin):

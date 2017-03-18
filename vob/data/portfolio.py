@@ -8,7 +8,7 @@ from bardata import BarData
 
 class Portfolio(object):
     """Strategy core data structure corresponding to one strategy"""
-    def __init__(self):
+    def __init__(self, account):
         #Positions dict whose key is instrument-direction
         self._positions = collections.defaultdic(Position)
         self._pnl = 0
@@ -16,6 +16,7 @@ class Portfolio(object):
         self._offset_pnl = 0
         self._commission = 0
         self._margin = 0
+        self._account = account #Father node point to account class
 
     def _calculate_holding_pnl(self, bardict):
         """Calculate holding pnl
@@ -44,6 +45,12 @@ class Portfolio(object):
                 self._holding_pnl = (abs(posi_long.deal_quantity - posi_short.deal_quantity) *
                                      (posi_short.avg_coset - bardict[elt].lastprice) * 
                                      bardict[elt].multiplier)
+            posi_long.lastprice = posi_short.lastprice = bardict[elt].lastprice
+            posi_long.update_margin()
+            posi_short.update_margin()
+        self._calculate_pnl()
+        self._calculate_margin()
+        self._account.update_account()
        
     def _calculate_offset_pnl(self, instrument):
         """Calculate offest pnl
@@ -54,6 +61,9 @@ class Portfolio(object):
         self._offset_pnl = (min(posi_long.deal_quantity, posi_short.deal_quantity) *
                             (posi_short.avg_cost - posi_long.avg_cost) *
                             posi_long.multiplier)
+        self._calculate_pnl()
+        self._calculate_margin()
+        self._account.update_account()
 
     def _calculate_pnl(self):
         self._pnl = self._holding_pnl + self._offset_pnl
@@ -64,19 +74,27 @@ class Portfolio(object):
     def _calculate_margin(self):
         self._margin = sum([v.margin for v in positions.values()]
 
-    def _process_order(self, order):
+    def process_order(self, order):
         """Procedure of booking order when order is traded
         :order: Order class data
         """
         cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
-        cur_posi.calculate_avg_cost(order)
         cur_posi.update_position(order)
 
-    def _process_settle(self, bardict):
+    def process_settle(self, bardict):
         """Process settlement bardict
+        :bardict: Bar datas
         """
+        #Temparorily use last price as settlement price, so first procedure is like normal bar
+        self._calculate_holding_pnl()
         for elt in bardict:
             cur_long = self._search_position_by_orderid(elt+'-'+'long')
             cur_short = self._search_position_by_orderid(elt+'-'+'short')
             cur_long.move_td2yd_position()
             cur_short.move_td2yd_position()
+
+    def process_normal_bar(self, bardict):
+        """Process normal bardict event
+        :bardict: Bar datas
+        """
+        self._calculate_holding_pnl(bardict)
