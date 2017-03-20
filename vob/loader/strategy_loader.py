@@ -4,7 +4,7 @@ import sys
 import traceback
 
 from six import exec_
-from base_strategy_loader import AbsStrategyLoader
+from .base_strategy_loader import AbsStrategyLoader
 
 class FileStrategyLoader(AbsStrategyLoader):
 

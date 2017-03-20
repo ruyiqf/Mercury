@@ -17,6 +17,7 @@ import click
 import os
 
 from vob import CommodityFuture
+from vob import Config
 
 @click.group()
 @click.option('-v', '--verbose', count=True)
@@ -51,7 +52,8 @@ def run(**kwargs):
     Start to run a strategy
     """
     cf = CommodityFuture()
-    cf.run(kwargs)
+    conf = Config(kwargs)
+    cf.run(conf)
      
 if __name__ == '__main__':
     entry_point()

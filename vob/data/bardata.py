@@ -9,20 +9,24 @@ class BarData(object):
     @property
     def instrument(self):
         return self._instrument
-    @instrument.setter(self, value):
+    @instrument.setter
+    def instrument(self, value):
         if isinstance(value, str):
             self._instrument = value
 
     @property
     def lastprice(self):
         return self._lastprice
-    @lastprice.setter(self, value):
+    @lastprice.setter
+    def lastprice(self, value):
         if isinstance(value, float):
             self._lastprice = value
         
     @property
     def margin_ratio(self):
         return self._margin_ratio
-    @margin_ratio.setter(self, value):
+
+    @margin_ratio.setter
+    def margin_ratio(self, value):
         if isinstance(value, float):
             self._margin_ratio = value

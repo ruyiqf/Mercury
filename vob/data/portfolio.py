@@ -2,15 +2,15 @@
 import datetime
 import collections
 
-from position import Position
-from order import Order
-from bardata import BarData
+from .position import Position
+from .order import Order
+from .bardata import BarData
 
 class Portfolio(object):
     """Strategy core data structure corresponding to one strategy"""
     def __init__(self, account):
         #Positions dict whose key is instrument-direction
-        self._positions = collections.defaultdic(Position)
+        self._positions = collections.defaultdict(Position)
         self._pnl = 0
         self._holding_pnl = 0
         self._offset_pnl = 0
@@ -72,7 +72,7 @@ class Portfolio(object):
         return self._positions[orderid]
 
     def _calculate_margin(self):
-        self._margin = sum([v.margin for v in positions.values()]
+        self._margin = sum([v.margin for v in positions.values()])
 
     def process_order(self, order):
         """Procedure of booking order when order is traded

@@ -2,7 +2,7 @@
 
 import datetime
 import collections
-from portfolio import Portfolio
+from .portfolio import Portfolio
 
 class Account(object):
     
@@ -17,7 +17,7 @@ class Account(object):
             self._slippage = kwargs.get('slippage')
 
         #Portfolios seperated from strategies
-        self._portfolios = collections.defaultdic(Portfolio)
+        self._portfolios = collections.defaultdict(Portfolio)
         
         self._static_equity = self._init_cash
         self._dynamic_equity = self._init_cash
@@ -36,7 +36,7 @@ class Account(object):
         return self._dynamic_equity
 
     @property
-    def margin(self)
+    def margin(self):
         return self._total_margin
 
     @property
@@ -61,9 +61,9 @@ class Account(object):
             self.portfolios[elt].process_settle(bardict)
 
     def update_account(self):
-        self._total_pnl = sum([v.pnl for v in self.portfolios.values()]
-        self._total_margin = sum([v.margin for v in self.portfolios.values()]
-        self._total_commission = sum([v.commission for v in self.portfolios.values()]
+        self._total_pnl = sum([v.pnl for v in self.portfolios.values()])
+        self._total_margin = sum([v.margin for v in self.portfolios.values()])
+        self._total_commission = sum([v.commission for v in self.portfolios.values()])
         self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
         self._risk_measure = self._total_margin / self._dynamic_equity
 

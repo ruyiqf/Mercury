@@ -20,6 +20,14 @@ import tempfile
 import tarfile
 import requests
 import shutil
+import time
+
+from .context import Context
+from .data import DataProxy, Account
+from .loader import FileStrategyLoader
+from .event import EventSource, EventBus
+
+from threading import Thread
 
 class CommodityFuture(object):
 
@@ -29,15 +37,31 @@ class CommodityFuture(object):
     def run(self, config):
         """Run strategy main function
         """
-         
-        print(config.data_bundle_path)
-        print(config.strategy_dir)
-        print(config.start_date)
-        print(config.end_date)
-        print(config.initial_cash)
-        print(config.frequency)
-        
+        print(config)        
+        allfiles = os.listdir(os.path.abspath(config.strategy_dir))
+        fsl = FileStrategyLoader()
+        data_proxy = DataProxy(os.path.abspath(config.data_bundle_path))
 
+        for elt in allfiles:
+            source = fsl.load(os.path.join(os.path.abspath(config.strategy_dir), elt), {})
+            #For every strategy code assign context
+            context = Context()
+            print(source['assets']())
+            context.scope = source
+            context.data_proxy = data_proxy
+            context.account = Account(initcash=config.initial_cash, start_date=config.start_date, end_date=config.end_date)
+            context.event_source = EventSource()
+            context.event_bus = EventBus()
+            context.start_date = config.start_date
+            context.end_date = config.end_date
+            context.frequency = config.frequency
+            handle_ctx = Thread(target=context.run)
+            handle_ctx.setDaemon(True)
+            handle_ctx.start()
+
+        while True:
+            time.sleep(10)
+            
     def update_bundle(self, data_bundle_path=None, confirm=True):
         default_bundle_path = os.path.abspath(os.path.expanduser('~/.mercury/bundle/'))
         if data_bundle_path is None:

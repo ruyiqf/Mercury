@@ -1,5 +1,5 @@
 #coding:utf-8
-from order import Order
+from .order import Order
 
 class Position(object):
 
@@ -89,7 +89,8 @@ class Position(object):
     @property
     def multiplier(self):
         return self._multiplier
-    @multiplier.setter(self, value):
+    @multiplier.setter
+    def multiplier(self, value):
         if isinstance(value, float):
             self._multiplier = value
 
@@ -100,7 +101,8 @@ class Position(object):
     @property
     def lastprice(self):
         return self._lastprice
-    @lastprice.setter(self, value):
+    @lastprice.setter
+    def lastprice(self, value):
         if isinstance(value, float):
             self._lastprice = value
         

@@ -1,8 +1,15 @@
 #coding:utf-8
+import abc
 from six import with_metaclass
 from abc import ABCMeta
 
 class BaseStrategy(with_metaclass(ABCMeta)):
+    @abc.abstractmethod
+    def assets(self):
+        """Need assgin assets temporarily
+        """
+        raise NotImplementedError
+   
     @abc.abstractmethod
     def init(self):
         """Init strategy
@@ -26,4 +33,3 @@ class BaseStrategy(with_metaclass(ABCMeta)):
         """Risk control responsible for search position and balance controlling risk
         """
         raise NotImplementedError
-        

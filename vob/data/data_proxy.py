@@ -6,8 +6,9 @@ import bcolz
 import pickle
 import numpy as np
 import pandas as pd
+import collections
 
-from instruments import Instrument
+from .instruments import Instrument
 
 class DataProxy(object):
     """Read bcolz data and return data bar"""
@@ -19,7 +20,7 @@ class DataProxy(object):
                              for k,v in pickle.load(open(os.path.join(root_dir, 'instruments.pk'), 'rb')).items()}
         self._instruments_pos = self._futures_bar.attrs['line_map']
     
-    def get_trading_bar(self, symbol, start_date, end_date):
+    def _get_one_trading_bar(self, symbol, start_date, end_date):
         try:
             l, r = self._instruments_pos[symbol]
             symbol_bar = self._futures_bar[l:r]
@@ -42,7 +43,22 @@ class DataProxy(object):
             return bar
         except KeyError as e:
             print('May be not find symbol:%s' % symbol)
-        
+
+    def get_trading_bars(self, symbols, start_date, end_date):
+        """Try to fetch symbols trading data bar and assemble into one dict"""
+        ret = collections.defaultdict(pd.DataFrame)
+        for elt in symbols:
+            ret[elt] = self._get_one_trading_bar(elt, start_date, end_date)
+        return ret
+
+    def get_trading_dates(self, bars):
+        """Extract date index from bars"""
+        ret = pd.DatetimeIndex([])
+        for elt in bars:
+            ret = ret.append(pd.DatetimeIndex(bars[elt].date.values))
+        ret = ret.sort_values()
+        return ret
+
 """Test Code"""
 def main():
     dp = DataProxy('/Users/ruyiqf/mercury/Mercury/vob/data/')
