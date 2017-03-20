@@ -16,15 +16,15 @@ class EventSource(object):
             yield Event(EVENT.INIT_EVENT)
             tickerlist = list(datebar)
             for ticker in tickerlist:
-                yield Event(EVENT.NORMAL_TICKER_EVENT)
+                yield Event(EVENT.NORMAL_TICKER_EVENT, data={'date':ticker})
                 #Judge this ticker whether generate settlement event
                 xi = tickerlist.index(ticker)
                 if xi+1 == len(tickerlist):
-                    yield Event(EVENT.SETTLEMENT_EVENT)
+                    yield Event(EVENT.SETTLEMENT_EVENT, data={'date':ticker})
                 else:
                     ticker_next = tickerlist[xi+1]
                     if (ticker_next.to_datetime() - ticker.to_datetime()) > datetime.timedelta(hours=8):
-                        yield Event(EVENT.SETTLEMENT_EVENT)
+                        yield Event(EVENT.SETTLEMENT_EVENT, data={'date':ticker})
         else:
             print('Till now not yet support')
              

@@ -1,4 +1,5 @@
 #coding:utf-8
+import time
 from .data import DataProxy, Account
 from .event import EventSource, EventBus, EVENT
 
@@ -97,5 +98,11 @@ class Context(object):
         trading_date_bar = self.data_proxy.get_trading_dates(bars)
         self.register()
         for event in self.event_source.events(trading_date_bar, frequency=self.frequency):
-            self.event_bus.pop_listeners(event.event_type)
+            if event.event_type == EVENT.SETTLEMENT_EVENT:
+                print(event.data['date'])
+                self.event_bus.pop_listeners(event.event_type, bars)
+            elif event.event_type == EVENT.NORMAL_TICKER_EVENT:
+                print(event.data['date'])
+                self.event_bus.pop_listeners(event.event_type)
+        end = time.time()
         

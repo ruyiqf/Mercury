@@ -26,7 +26,11 @@ class Account(object):
         self._total_commission = 0
         self._available_cash = self._init_cash
         self._risk_measure = 0
-        
+
+    @property
+    def portfolios(self):
+        return self._portfolios 
+
     @property
     def static_equity(self):
         return self._static_equity
