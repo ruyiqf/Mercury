@@ -75,7 +75,7 @@ class Position(object):
         return self._deal_quantity
 
     @property
-    def avg_cose(self):
+    def avg_cost(self):
         return self._avg_cost
 
     @property
@@ -105,4 +105,8 @@ class Position(object):
     def lastprice(self, value):
         if isinstance(value, float):
             self._lastprice = value
+
+    @property
+    def today_position(self):
+        return self._td_position
         

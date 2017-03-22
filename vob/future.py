@@ -34,6 +34,7 @@ class CommodityFuture(object):
     def __init__(self):
         pass
 
+    
     def run(self, config):
         """Run strategy main function
         """

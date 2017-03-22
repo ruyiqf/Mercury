@@ -2,6 +2,7 @@
 import time
 from .data import DataProxy, Account
 from .event import EventSource, EventBus, EVENT
+from .apis import Trader, Quotation
 
 class Context(object):
     """Need say something Wow, will replace environment object"""
@@ -14,7 +15,43 @@ class Context(object):
         self._frequency = None
         self._start_date = None
         self._end_date = None
+        self._trader = None # Mock and real trader handler
+        self._quotation = None # Transmit quotation
+        self._strategy_name = None # Corresponding portfolio, a strategy has only one context
+        self._bars = None # Dict {instrument:df}
     
+    def __setter__(self, name, value):
+        """Connect strategy functions, here not check validation of values"""
+        self.__dict__[name] = value
+
+    @property
+    def bars(self):
+        return self._bars
+
+    @property
+    def strategy_name(self):
+        return self._strategy_name
+    @strategy_name.setter
+    def strategy_name(self, value):
+        if isinstance(value, str):
+            self._strategy_name = value
+
+    @property
+    def trader(self):
+        return self._trader
+    @trader.setter
+    def trader(self, value):
+        if isinstance(value, Trader):
+            self._trader = value
+
+    @property
+    def quotation(self):
+        return self._quotation
+    @quotation.setter
+    def quotation(self, value):
+        if isinstance(value, Quotation):
+            self._quotation = value
+
     @property
     def scope(self):
         return self._scope
@@ -94,6 +131,7 @@ class Context(object):
         bars = self.data_proxy.get_trading_bars(self.scope['assets'](),
                                                 self.start_date,
                                                 self.end_date)
+        self._bars = bars
 
         trading_date_bar = self.data_proxy.get_trading_dates(bars)
         self.register()

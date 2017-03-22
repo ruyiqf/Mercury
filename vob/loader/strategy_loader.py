@@ -28,6 +28,7 @@ def main():
     fsl = FileStrategyLoader()
     source = fsl.load('test.py', {}) 
     source['test_print']()
+    source['test_pd']()
 
 if __name__ == '__main__':
     main()

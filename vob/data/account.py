@@ -28,6 +28,10 @@ class Account(object):
         self._risk_measure = 0
 
     @property
+    def init_cash(self):
+        return self._init_cash
+
+    @property
     def portfolios(self):
         return self._portfolios 
 
