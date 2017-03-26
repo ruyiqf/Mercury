@@ -21,20 +21,36 @@ import tarfile
 import requests
 import shutil
 import time
+import traceback
 
 from .context import Context
-from .data import DataProxy, Account
+from .data import DataProxy, Account, 
 from .loader import FileStrategyLoader
 from .event import EventSource, EventBus
+from .apis import RiskCal
 
 from threading import Thread
+from queue import Queue
 
 class CommodityFuture(object):
 
     def __init__(self):
-        pass
+        self.results_q = Queue() # Asynchronous receiving results from strategy context
+        self.results_dir = None
 
-    
+    def recv_results(self):
+        """Asynchronize receiving results from strategies"""
+        while True:
+            try:
+                strategy_name, result_list = self.results_q.get()
+                rc = RiskCal(result_list)
+                rc.calculate()
+                output_file = os.path.join(self.results_dir, strategy_name+'_result.pk')
+                rc.ret_df.to_pickle(output_file)
+            except Exception as e:
+                traceback.print_ex()
+                print('encounter errors will return')
+       
     def run(self, config):
         """Run strategy main function
         """
@@ -42,6 +58,7 @@ class CommodityFuture(object):
         allfiles = os.listdir(os.path.abspath(config.strategy_dir))
         fsl = FileStrategyLoader()
         data_proxy = DataProxy(os.path.abspath(config.data_bundle_path))
+        self.results_dir = os.path.abspath(config.results_path)
 
         for elt in allfiles:
             source = fsl.load(os.path.join(os.path.abspath(config.strategy_dir), elt), {})
@@ -56,12 +73,13 @@ class CommodityFuture(object):
             context.start_date = config.start_date
             context.end_date = config.end_date
             context.frequency = config.frequency
+            context.results_q = self.results_q
             handle_ctx = Thread(target=context.run)
             handle_ctx.setDaemon(True)
             handle_ctx.start()
 
-        while True:
-            time.sleep(10)
+       reciever = Thread(target=self.recv_results)
+       reciever.start()
             
     def update_bundle(self, data_bundle_path=None, confirm=True):
         default_bundle_path = os.path.abspath(os.path.expanduser('~/.mercury/bundle/'))

@@ -1,8 +1,10 @@
 #coding:utf-8
 import time
-from .data import DataProxy, Account
+from queue import Queue
+from .data import DataProxy, Account, BarData
 from .event import EventSource, EventBus, EVENT
-from .apis import Trader, Quotation
+from .apis import Trader, Quotation 
+from .exception import SearchError
 
 class Context(object):
     """Need say something Wow, will replace environment object"""
@@ -19,11 +21,21 @@ class Context(object):
         self._quotation = None # Transmit quotation
         self._strategy_name = None # Corresponding portfolio, a strategy has only one context
         self._bars = None # Dict {instrument:df}
+        self._results_q = None # When initializing, will setting queue
+        self._ret_list = list()
     
     def __setter__(self, name, value):
         """Connect strategy functions, here not check validation of values"""
         self.__dict__[name] = value
-
+    
+    @property
+    def results_q(self):
+        return self._results_q
+    @results_q.setter
+    def results_q(self, value):
+        if isinstance(value, Queue):
+            self._results_q = value
+        
     @property
     def bars(self):
         return self._bars
@@ -127,6 +139,13 @@ class Context(object):
         self.event_bus.add_listeners(EVENT.NORMAL_TICKER_EVENT, self.scope['trade_logic']) 
         self.event_bus.add_listeners(EVENT.SETTLEMENT_EVENT, self.account.settlement)
         
+    def _search_by_date_from_bars(self, date, bars):
+        for elt in bars:
+            df = bars[elt]
+            if len(df[df.date == date]) > 0:
+                return df[df.date == date]
+        raise SearchError()
+
     def run(self):
         bars = self.data_proxy.get_trading_bars(self.scope['assets'](),
                                                 self.start_date,
@@ -136,11 +155,24 @@ class Context(object):
         trading_date_bar = self.data_proxy.get_trading_dates(bars)
         self.register()
         for event in self.event_source.events(trading_date_bar, frequency=self.frequency):
+            if event.event_type == EVENT.INIT_EVENT:
+                self.event_bus.pop_listeners(event.event_type, self)
+                continue
+            try:
+                data = self._search_by_date_from_bars(event.data['date'], bars)
+                bardata = BarData()
+                bardata.instrument = data.symbol
+                bardata.lastprice = data.lastprice
+                bardata.margin_raio = self.data_proxy.instruments[elt].margin_ratio
+                bardata.multiplier = self.data_proxy.instruments[elt].multiplier
+                quotation_dict = {data.symbol:barData}
+            except SearchError as e:
+                print(e)
             if event.event_type == EVENT.SETTLEMENT_EVENT:
-                print(event.data['date'])
-                self.event_bus.pop_listeners(event.event_type, bars)
+                self.event_bus.pop_listeners(event.event_type, self._ret_list, quotation_dict)
             elif event.event_type == EVENT.NORMAL_TICKER_EVENT:
-                print(event.data['date'])
-                self.event_bus.pop_listeners(event.event_type)
+                self.event_bus.pop_listeners(event.event_type, self, quotation_dict)
+
+        self._results_q.put((self._strategy_name, self._ret_list))
         end = time.time()
         

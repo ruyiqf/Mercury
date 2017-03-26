@@ -3,6 +3,7 @@
 import datetime
 import collections
 from .portfolio import Portfolio
+from .settledata import SettleData
 
 class Account(object):
     
@@ -38,6 +39,10 @@ class Account(object):
     @property
     def static_equity(self):
         return self._static_equity
+    @static_equity.setter
+    def static_equity(self, value):
+        if isinstance(value, float):
+            self._static_equity = value
     
     @property
     def dynamic_equity(self):
@@ -63,10 +68,14 @@ class Account(object):
     def rick_measure(self):
         return self._risk_measure
 
-    def settlement(self, bardict):
-        """Settlement is the function from top to bottom aimed to settle all portfolios"""
+    def settlement(self, retlist, bardict):
+        """Settlement is the function from top to bottom aimed to settle all portfolios
+        :retlist: strategy context data, need put settlement result into retlist
+        :bardict: every instrument has one dict data
+        """
         for elt in self.portfolios:
             self.portfolios[elt].process_settle(bardict)
+        retlist.append((list(bardict.values())[0].date, SettleData(self.__dict__))
 
     def update_account(self):
         self._total_pnl = sum([v.pnl for v in self.portfolios.values()])

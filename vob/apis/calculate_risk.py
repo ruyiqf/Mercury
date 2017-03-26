@@ -15,6 +15,7 @@ class RiskCal(object):
         self._annualized_returns = .0
         self._volatility = .0
         self._sharpe = .0
+        self._ret_df = pd.DataFrame()
 
     @property
     def riskfree_returns(self):
@@ -24,6 +25,10 @@ class RiskCal(object):
         if isinstance(value, float):
             self._riskfree_returns = value
 
+    @property
+    def ret_df(self):
+        return self._ret_df
+
     def calculate(self):
         date_index = pd.DatetimeIndex([date for date, account in self._static_equity_list])
         daily_net_worth = [account.static_equity/account.init_cash for date, account in self._static_equity_list]
@@ -32,4 +37,6 @@ class RiskCal(object):
         self._volatility = 252 ** 0.5 * np.std(daily_net_worth)  
         self._max_drawdown = max(daily_net_worth) - min(daily_net_worth) 
         self._sharpe = (np.mean(daily_net_worth) - self._riskfree_returns) / self._volatility
+        self._ret_df.set_index(date_index)
+        self._ret_df['net_worth'] = daily_net_worth
          

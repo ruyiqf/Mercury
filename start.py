@@ -47,6 +47,7 @@ def update_bundle(data_bundle_path):
 @click.option('-e', '--end-date', type=click.STRING)
 @click.option('-ic', '--initial-cash', type=click.FLOAT)
 @click.option('-fq', '--frequency', default=None, type=click.STRING)
+@click.option('-o', '--results-path', type=click.Path(exists=True))
 def run(**kwargs):
     """
     Start to run a strategy

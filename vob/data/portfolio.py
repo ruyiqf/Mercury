@@ -86,7 +86,8 @@ class Portfolio(object):
         :bardict: Bar datas
         """
         #Temparorily use last price as settlement price, so first procedure is like normal bar
-        self._calculate_holding_pnl()
+        self._calculate_holding_pnl(bardict)
+        self._account.static_equity = self._account.dynamic_equity
         for elt in bardict:
             cur_long = self._search_position_by_orderid(elt+'-'+'long')
             cur_short = self._search_position_by_orderid(elt+'-'+'short')

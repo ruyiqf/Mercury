@@ -20,6 +20,10 @@ class DataProxy(object):
                              for k,v in pickle.load(open(os.path.join(root_dir, 'instruments.pk'), 'rb')).items()}
         self._instruments_pos = self._futures_bar.attrs['line_map']
     
+    @property
+    def instruments(self):
+        return self._instruments
+
     def _get_one_trading_bar(self, symbol, start_date, end_date):
         try:
             l, r = self._instruments_pos[symbol]
