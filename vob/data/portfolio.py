@@ -93,13 +93,13 @@ class Portfolio(object):
         """Procedure of booking order when order is traded
         :order: Order class data
         """
-        print('process order %s'%order.__dict__)
         cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
         cur_posi.update_position(order)
-        print('posi %s'%cur_posi.__dict__)
+        pre_margin = self._margin
         self._calculate_margin()
+        delta_margin = self._margin - pre_margin
+        self._account.update_available(delta_margin)
         self._account.update_account()
-        print('portfolio margin:%f, account %s'%(self._margin, self._account.__dict__))
 
     def process_settle(self, bardata):
         """Process settlement bardata
