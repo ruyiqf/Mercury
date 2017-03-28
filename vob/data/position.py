@@ -12,7 +12,7 @@ class Position(object):
         self._direction = None
         self._deal_quantity = 0 #Single direction traded number
         self._margin_ratio = 0.0
-        self._mutiplier = 0.0
+        self._multiplier = 0.0
         self._margin = 0.0
         self._lastprice = 0.0
 
@@ -52,7 +52,8 @@ class Position(object):
         self._lastprice = settle_price
         
     def update_margin(self):
-        self._margin = self._lastprice * self._total_position * self._margin_ratio * self._multiplier
+        """Recalculate these positions occupy total margin"""
+        self._margin = self._avg_cost * self._total_position * self._margin_ratio * self._multiplier
 
     @property
     def total_position(self):

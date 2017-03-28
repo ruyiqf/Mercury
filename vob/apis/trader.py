@@ -40,17 +40,24 @@ class Trader(object):
                 return False
             return True
         elif order.offset == 'close':
-            posid = order.instrument+'-'+'long' if order.direction == 'short' else order.instrument+'-'+'short'
+            order.direction = 'long' if order.direction == 'short' else 'short'
+            posid = order.instrument+'-'+order.direction
             hold_posi_quantity = account.portfolios[strategy_name].positions[posid].total_position
-            if order.volume > hold_posi_quantity:
-                print('Hold position quantity are not enough hold:%d, order volume:%d' % (hold_posi_quantity, order.volume))
+            try:
+                assert order.volume > 0, 'close volume need greater than zero'
+                assert order.volume < hold_posi_quantity, 'close volume need lower than hold posi quantity'
+            except AssertionError as e:
+                print(e)
                 return False
             return True
         elif order.offset == 'closetoday':
-            posid = order.instrument+'-'+'long' if order.direction == 'short' else order.instrument+'-'+'short'
+            order.direction = 'long' if order.direction == 'short' else 'short'
+            posid = order.instrument+'-'+order.direction
             td_hold_posi_quantity = account.portfolios[strategy_name].positions[posid].today_position
-            if order.volume > td_hold_posi_quantity:
-                print('Today positions are not enough today:%d, order volume:%d' % (td_hold_posi_quantity, order.volume))
+            try:
+                assert order.volume < td_hold_posi_quantity, 'close today position need lower than today hold position'
+            except AssertionError as e:
+                print(e)
                 return False
             return True
         else:

@@ -22,9 +22,9 @@ class Account(object):
         
         self._static_equity = self._init_cash
         self._dynamic_equity = self._init_cash
-        self._total_pnl = 0
-        self._total_margin = 0
-        self._total_commission = 0
+        self._total_pnl = 0.0
+        self._total_margin = 0.0
+        self._total_commission = 0.0
         self._available_cash = self._init_cash
         self._risk_measure = 0
 
@@ -83,6 +83,7 @@ class Account(object):
         self._total_commission = sum([v.commission for v in self.portfolios.values()])
         self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
         self._risk_measure = self._total_margin / self._dynamic_equity
+        self._available_cash -= self._total_margin
 
     def update_available(self, delta_margin):
         """For portfolio available_cash is viewing, so need this interface

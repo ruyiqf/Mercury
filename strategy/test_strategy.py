@@ -32,6 +32,8 @@ def trade_logic(context, quotation):
     sma0 = context.sma[instrument].ix[quotation.date].sma0
     sma1 = context.sma[instrument].ix[quotation.date].sma1
     sma2 = context.sma[instrument].ix[quotation.date].sma2
+    
+    #print('lastprice:%f,atr:%f,sma0:%f,sma2:%f'%(lastprice,atr,sma0,sma2))
 
     if lastprice < posi_long.avg_cost - 2 * atr:
         order = Order()
@@ -40,6 +42,7 @@ def trade_logic(context, quotation):
         order.direction = 'short'
         order.offset = 'close'
         order.instrument = instrument
+        #print('lastprice lower than atr close short order.volume:%d' % order.volume)
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
     elif lastprice > posi_short.avg_cost + 2 * atr:
         order = Order()
@@ -49,6 +52,7 @@ def trade_logic(context, quotation):
         order.offset = 'close'
         order.instrument = instrument
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
+        #print('lastprice greater than atr close long order.volume:%d' % order.volume)
     
     # Breaking system
     if quotation.lastprice > sma2:
@@ -61,6 +65,7 @@ def trade_logic(context, quotation):
         order.offset = 'open'
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
+        print('quotation price greater than sma2 open long')
     elif quotation.lastprice < sma0:
         #volume = (int)(account.available * 0.001 / (atr*10))
         volume = 1
@@ -71,6 +76,7 @@ def trade_logic(context, quotation):
         order.offset = 'open'
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
+        print('quotation price lower than sma0 open short')
 
     # Update account and position information
     portfolio.process_normal_bar(quotation)

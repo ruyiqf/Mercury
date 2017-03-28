@@ -15,7 +15,7 @@ class Portfolio(object):
         self._holding_pnl = 0
         self._offset_pnl = 0
         self._commission = 0
-        self._margin = 0
+        self._margin = 0.0
         self._account = account #Father node point to account class
 
     @property
@@ -93,8 +93,13 @@ class Portfolio(object):
         """Procedure of booking order when order is traded
         :order: Order class data
         """
+        print('process order %s'%order.__dict__)
         cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
         cur_posi.update_position(order)
+        print('posi %s'%cur_posi.__dict__)
+        self._calculate_margin()
+        self._account.update_account()
+        print('portfolio margin:%f, account %s'%(self._margin, self._account.__dict__))
 
     def process_settle(self, bardata):
         """Process settlement bardata
