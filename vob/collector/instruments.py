@@ -237,7 +237,7 @@ class CreateBasicInstruments(object):
             ctid = contract[0:-4] if contract[-4].isdigit() else contract[0:-3]
             df['exchange'] = self.ctidmap[ctid]['exchange']
             df['symbol'] = contract
-            df['lastprice'] = None
+            df['lastprice'] = df['close']
             df['bid'] = None
             df['ask'] = None
             df['uppderlimit'] = None

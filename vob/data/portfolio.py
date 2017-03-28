@@ -58,7 +58,7 @@ class Portfolio(object):
                                  bardata.multiplier)
         else:
             self._holding_pnl = (abs(posi_long.deal_quantity - posi_short.deal_quantity) *
-                                 (posi_short.avg_coset - bardata.lastprice) * 
+                                 (posi_short.avg_cost - bardata.lastprice) * 
                                  bardata.multiplier)
         posi_long.lastprice = posi_short.lastprice = bardata.lastprice
         posi_long.update_margin()

@@ -163,10 +163,11 @@ class Context(object):
                 data = self._search_by_date_from_bars(event.data['date'], bars)
                 bardata = BarData()
                 bardata.instrument = data.symbol.values[0]
-                bardata.lastprice = data.lastprice.values[0]
+                bardata.lastprice = data.close.values[0]
                 bardata.date = pd.to_datetime(data.date.values[0]).to_pydatetime()
-                bardata.margin_raio = self.data_proxy.instruments[bardata.instrument].margin_rate
+                bardata.margin_ratio = self.data_proxy.instruments[bardata.instrument].margin_rate
                 bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
+                bardata.volume = int(data.volume.values[0])
             except SearchError as e:
                 print(e)
             if event.event_type == EVENT.SETTLEMENT_EVENT:

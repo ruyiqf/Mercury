@@ -1,5 +1,6 @@
 #coding:utf-8
 import pandas as pd
+import numpy as np
 import talib
 
 class Quotation(object):
@@ -15,16 +16,16 @@ class Quotation(object):
         """
         if indicator == 'sma':
             try:
-                sma0 = talib.SMA(databar.low.values, timeperiod = period)
-                sma1 = talib.SMA(databar.close.values, timeperiod = period)
-                sma2 = talib.SMA(databar.high.values, timeperiod = period)
+                sma0 = talib.SMA(np.array(databar.low), timeperiod = period)
+                sma1 = talib.SMA(np.array(databar.close), timeperiod = period)
+                sma2 = talib.SMA(np.array(databar.high), timeperiod = period)
                 return pd.DataFrame({'sma0':sma0, 'sma1':sma1, 'sma2':sma2}, index=pd.DatetimeIndex(databar.date))
             except KeyError:
                 print('Pls check databar whether is dataframe')
                 
         elif indicator == 'atr':
             try:
-                atr = talib.ATR(databar.high.values, databar.low.values, databar.close.values, timeperiod = period)
+                atr = talib.ATR(np.array(databar.high), np.array(databar.low), np.array(databar.close), timeperiod = period)
                 return pd.DataFrame({'atr':atr}, index=pd.DatetimeIndex(databar.date))
             except KeyError:
                 print('Pls check databar whether is dataframe')

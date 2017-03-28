@@ -53,7 +53,11 @@ class Position(object):
         
     def update_margin(self):
         self._margin = self._lastprice * self._total_position * self._margin_ratio * self._multiplier
-        
+
+    @property
+    def total_position(self):
+        return self._total_position       
+
     @property
     def instrument(self):
         return self._instrument

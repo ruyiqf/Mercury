@@ -9,7 +9,16 @@ class BarData(object):
         self._margin_ratio = 0.0
         self._multiplier = 0.0
         self._date = None
+        self._volume = 0
     
+    @property
+    def volume(self):
+        return self._volume
+    @volume.setter
+    def volume(self, value):
+        if isinstance(value, int):
+            self._volume = value
+
     @property
     def instrument(self):
         return self._instrument
@@ -29,7 +38,6 @@ class BarData(object):
     @property
     def margin_ratio(self):
         return self._margin_ratio
-
     @margin_ratio.setter
     def margin_ratio(self, value):
         if isinstance(value, float):
@@ -49,4 +57,4 @@ class BarData(object):
     @multiplier.setter
     def multiplier(self, value):
         if isinstance(value, float):
-            self._multipler = value
+            self._multiplier = value

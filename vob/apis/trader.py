@@ -13,41 +13,46 @@ class Trader(object):
         :trade_mode: revervation of switching between mock-trading and real-trading
         """
         if trade_mod == 'mock':
-            if self._validate_order(order, account, quotation):
-                portfolio.process_order(order)
+            if self._validate_order(order, account, quotation, strategy_name):
+                account.portfolios[strategy_name].process_order(order)
         elif trade_mod == 'real':
             print('Need connect trading system later')
         
-    def _validate_order(self, order, account, quotation):
+    def _validate_order(self, order, account, quotation, strategy_name):
         """Check whether order is validate
         :order: untraded order
         :account: include capital information
         :quotation: bar data
         """
         if quotation.volume < order.volume:
-            print('Limit volume bardata volume:%d, untraded volume:%d' % 
-                  (quotation.volume, order.volume))
+            print('Limit volume bardata volume:%d, untraded volume:%d, date:%s' % 
+                  (quotation.volume, order.volume, quotation.date))
             return False
 
         # Calculate this order's margin
-        posid = order.instrument+'-'+order.direction
         if order.offset == 'open': 
-            margin_ratio = account.portfolios[strategy_name].positions[posid].marge_ratio
-            multiplier = account.portfolios[strategy_name].positions[posid].multiplier
+            posid = order.instrument+'-'+order.direction
+            margin_ratio = account.portfolios[strategy_name].positions[posid].margin_ratio = quotation.margin_ratio
+            multiplier = account.portfolios[strategy_name].positions[posid].multiplier = quotation.multiplier
             margin = order.price * order.volume * margin_ratio * multiplier
-            if margin < account.available:
-                print('Lack of capital available:%f, margin:%f' % (account.availalbe, margin))
+            if margin > account.available:
+                print('Lack of capital available:%f, margin:%f' % (account.available, margin))
                 return False
+            return True
         elif order.offset == 'close':
-            hold_posi_quantity = account.portfolios[strategy_name].positions[posid].total_quantity
+            posid = order.instrument+'-'+'long' if order.direction == 'short' else order.instrument+'-'+'short'
+            hold_posi_quantity = account.portfolios[strategy_name].positions[posid].total_position
             if order.volume > hold_posi_quantity:
                 print('Hold position quantity are not enough hold:%d, order volume:%d' % (hold_posi_quantity, order.volume))
                 return False
+            return True
         elif order.offset == 'closetoday':
+            posid = order.instrument+'-'+'long' if order.direction == 'short' else order.instrument+'-'+'short'
             td_hold_posi_quantity = account.portfolios[strategy_name].positions[posid].today_position
             if order.volume > td_hold_posi_quantity:
                 print('Today positions are not enough today:%d, order volume:%d' % (td_hold_posi_quantity, order.volume))
                 return False
-        else:
             return True
+        else:
+            return False
             

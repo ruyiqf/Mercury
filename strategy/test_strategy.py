@@ -17,7 +17,7 @@ def init(context):
     for bar in context.bars:
         context.atr[bar] = context.quotation.history(context.bars[bar], 14*240, 'atr')
         context.sma[bar] = context.quotation.history(context.bars[bar], 20*240, 'sma')
-
+    
 def trade_logic(context, quotation):
     """Normal ticker data will trigger"""
     instrument = quotation.instrument
@@ -36,7 +36,7 @@ def trade_logic(context, quotation):
     if lastprice < posi_long.avg_cost - 2 * atr:
         order = Order()
         order.price = quotation.lastprice
-        order.volume = posi_long.total_quantity
+        order.volume = posi_long.total_position
         order.direction = 'short'
         order.offset = 'close'
         order.instrument = instrument
@@ -44,7 +44,7 @@ def trade_logic(context, quotation):
     elif lastprice > posi_short.avg_cost + 2 * atr:
         order = Order()
         order.price = quotation.lastprice
-        order.volume = posi_short.total_quantity
+        order.volume = posi_short.total_position
         order.direction = 'long'
         order.offset = 'close'
         order.instrument = instrument
@@ -52,7 +52,8 @@ def trade_logic(context, quotation):
     
     # Breaking system
     if quotation.lastprice > sma2:
-        volume = (int)(account.available * 0.001 / (atr*10))
+        #volume = (int)(account.available * 0.0001 / (atr*10))
+        volume = 1
         order = Order()
         order.instrument = instrument
         order.price = quotation.lastprice
@@ -61,7 +62,8 @@ def trade_logic(context, quotation):
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
     elif quotation.lastprice < sma0:
-        volume = (int)(account.available * 0.001 / (atr*10))
+        #volume = (int)(account.available * 0.001 / (atr*10))
+        volume = 1
         order = Order()
         order.instrument = instrument
         order.price = quotation.lastprice
