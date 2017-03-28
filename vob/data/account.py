@@ -18,7 +18,7 @@ class Account(object):
             self._slippage = kwargs.get('slippage')
 
         #Portfolios seperated from strategies
-        self._portfolios = collections.defaultdict(Portfolio)
+        self._portfolios = collections.defaultdict(lambda:Portfolio(self))
         
         self._static_equity = self._init_cash
         self._dynamic_equity = self._init_cash
@@ -68,14 +68,14 @@ class Account(object):
     def rick_measure(self):
         return self._risk_measure
 
-    def settlement(self, retlist, bardict):
+    def settlement(self, retlist, bardata):
         """Settlement is the function from top to bottom aimed to settle all portfolios
         :retlist: strategy context data, need put settlement result into retlist
-        :bardict: every instrument has one dict data
+        :bardata: every instrument has one dict data
         """
         for elt in self.portfolios:
-            self.portfolios[elt].process_settle(bardict)
-        retlist.append((list(bardict.values())[0].date, SettleData(self.__dict__))
+            self.portfolios[elt].process_settle(bardata)
+        retlist.append((bardata.date, SettleData(self.__dict__)))
 
     def update_account(self):
         self._total_pnl = sum([v.pnl for v in self.portfolios.values()])

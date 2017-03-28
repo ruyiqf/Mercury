@@ -24,10 +24,10 @@ import time
 import traceback
 
 from .context import Context
-from .data import DataProxy, Account, 
+from .data import DataProxy, Account
 from .loader import FileStrategyLoader
 from .event import EventSource, EventBus
-from .apis import RiskCal
+from .apis import RiskCal, Quotation, Trader
 
 from threading import Thread
 from queue import Queue
@@ -48,7 +48,7 @@ class CommodityFuture(object):
                 output_file = os.path.join(self.results_dir, strategy_name+'_result.pk')
                 rc.ret_df.to_pickle(output_file)
             except Exception as e:
-                traceback.print_ex()
+                traceback.print_exc()
                 print('encounter errors will return')
        
     def run(self, config):
@@ -74,12 +74,15 @@ class CommodityFuture(object):
             context.end_date = config.end_date
             context.frequency = config.frequency
             context.results_q = self.results_q
+            context.quotation = Quotation()
+            context.trader = Trader()
+            context.strategy_name = elt.split('.')[0]
             handle_ctx = Thread(target=context.run)
             handle_ctx.setDaemon(True)
             handle_ctx.start()
 
-       reciever = Thread(target=self.recv_results)
-       reciever.start()
+        reciever = Thread(target=self.recv_results)
+        reciever.start()
             
     def update_bundle(self, data_bundle_path=None, confirm=True):
         default_bundle_path = os.path.abspath(os.path.expanduser('~/.mercury/bundle/'))

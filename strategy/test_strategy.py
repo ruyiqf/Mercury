@@ -1,5 +1,7 @@
 import collections
-from .data import Order
+import pandas as pd
+from vob.data import Order
+
 """
 Core functions of strategy are init and trade_logic
 """
@@ -10,7 +12,7 @@ def init(context):
     """First need talib caculate index which whole strategies needed
        Calculate necessary indicators such as atr, sma
     """
-    context.art = collections.defaultdict(dict)
+    context.atr = collections.defaultdict(dict)
     context.sma = collections.defaultdict(dict)
     for bar in context.bars:
         context.atr[bar] = context.quotation.history(context.bars[bar], 14*240, 'atr')
@@ -25,11 +27,11 @@ def trade_logic(context, quotation):
     lastprice = quotation.lastprice
     posi_long = portfolio.positions[instrument+'-'+'long']
     posi_short = portfolio.positions[instrument+'-'+'short']
-    atr = context.atr[instrument].ix[quotation.date].atr[0]
+    atr = context.atr[instrument].ix[quotation.date].atr
 
-    sma0 = context.sma[instrument].ix[quotation.data].sma0[0]
-    sma1 = context.sma[instrument].ix[quotation.data].sma1[1]
-    sma2 = context.sma[instrument].ix[quotation.data].sma2[2]
+    sma0 = context.sma[instrument].ix[quotation.date].sma0
+    sma1 = context.sma[instrument].ix[quotation.date].sma1
+    sma2 = context.sma[instrument].ix[quotation.date].sma2
 
     if lastprice < posi_long.avg_cost - 2 * atr:
         order = Order()
@@ -58,7 +60,7 @@ def trade_logic(context, quotation):
         order.offset = 'open'
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
-    elif quotaton.lastprice < sma0:
+    elif quotation.lastprice < sma0:
         volume = (int)(account.available * 0.001 / (atr*10))
         order = Order()
         order.instrument = instrument
@@ -67,4 +69,7 @@ def trade_logic(context, quotation):
         order.offset = 'open'
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
+
+    # Update account and position information
+    portfolio.process_normal_bar(quotation)
 

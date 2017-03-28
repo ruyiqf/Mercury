@@ -1,5 +1,4 @@
 #coding:utf-8
-from ..data import Order
 
 class Trader(object):
     def __init__(self):

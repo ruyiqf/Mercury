@@ -1,5 +1,6 @@
 #coding:utf-8
 import time
+import pandas as pd
 from queue import Queue
 from .data import DataProxy, Account, BarData
 from .event import EventSource, EventBus, EVENT
@@ -161,17 +162,17 @@ class Context(object):
             try:
                 data = self._search_by_date_from_bars(event.data['date'], bars)
                 bardata = BarData()
-                bardata.instrument = data.symbol
-                bardata.lastprice = data.lastprice
-                bardata.margin_raio = self.data_proxy.instruments[elt].margin_ratio
-                bardata.multiplier = self.data_proxy.instruments[elt].multiplier
-                quotation_dict = {data.symbol:barData}
+                bardata.instrument = data.symbol.values[0]
+                bardata.lastprice = data.lastprice.values[0]
+                bardata.date = pd.to_datetime(data.date.values[0]).to_pydatetime()
+                bardata.margin_raio = self.data_proxy.instruments[bardata.instrument].margin_rate
+                bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
             except SearchError as e:
                 print(e)
             if event.event_type == EVENT.SETTLEMENT_EVENT:
-                self.event_bus.pop_listeners(event.event_type, self._ret_list, quotation_dict)
+                self.event_bus.pop_listeners(event.event_type, self._ret_list, bardata)
             elif event.event_type == EVENT.NORMAL_TICKER_EVENT:
-                self.event_bus.pop_listeners(event.event_type, self, quotation_dict)
+                self.event_bus.pop_listeners(event.event_type, self, bardata)
 
         self._results_q.put((self._strategy_name, self._ret_list))
         end = time.time()

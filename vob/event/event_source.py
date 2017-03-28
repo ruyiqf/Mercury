@@ -23,7 +23,7 @@ class EventSource(object):
                     yield Event(EVENT.SETTLEMENT_EVENT, data={'date':ticker})
                 else:
                     ticker_next = tickerlist[xi+1]
-                    if (ticker_next.to_datetime() - ticker.to_datetime()) > datetime.timedelta(hours=8):
+                    if (ticker_next.to_pydatetime() - ticker.to_pydatetime()) > datetime.timedelta(hours=8):
                         yield Event(EVENT.SETTLEMENT_EVENT, data={'date':ticker})
         else:
             print('Till now not yet support')

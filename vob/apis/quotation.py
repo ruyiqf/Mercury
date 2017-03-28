@@ -18,13 +18,13 @@ class Quotation(object):
                 sma0 = talib.SMA(databar.low.values, timeperiod = period)
                 sma1 = talib.SMA(databar.close.values, timeperiod = period)
                 sma2 = talib.SMA(databar.high.values, timeperiod = period)
-                return pd.DataFrame({'sma0':sma, 'sma1':sma1, 'sma2':sma2}, index=pd.DatetimeIndex(databar.date))
+                return pd.DataFrame({'sma0':sma0, 'sma1':sma1, 'sma2':sma2}, index=pd.DatetimeIndex(databar.date))
             except KeyError:
                 print('Pls check databar whether is dataframe')
                 
-        elif indicaotr == 'atr':
+        elif indicator == 'atr':
             try:
-                atr = talib.ATR(databar.high.values, databar.low.valuse, databar.close.valuse, timeperiod = period)
+                atr = talib.ATR(databar.high.values, databar.low.values, databar.close.values, timeperiod = period)
                 return pd.DataFrame({'atr':atr}, index=pd.DatetimeIndex(databar.date))
             except KeyError:
                 print('Pls check databar whether is dataframe')
@@ -36,7 +36,7 @@ class Quotation(object):
                                                         slowperiod = period['slowperiod'],
                                                         signalperiod = period['signalperiod'])
                 
-                return pd.DataFrame({'macd':macd, 'macdsignal':macdsignal, 'macdhist':macdhist, index=pd.DatetimeIndex(databar.date))
+                return pd.DataFrame({'macd':macd, 'macdsignal':macdsignal, 'macdhist':macdhist}, index=pd.DatetimeIndex(databar.date))
             except KeyError:
                 print('Pls check databar whether is dataframe')
                 return None
