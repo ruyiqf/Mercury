@@ -65,7 +65,6 @@ def trade_logic(context, quotation):
         order.offset = 'open'
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
-        print('quotation price greater than sma2 open long')
     elif quotation.lastprice < sma0:
         #volume = (int)(account.available * 0.001 / (atr*10))
         volume = 1
@@ -76,7 +75,6 @@ def trade_logic(context, quotation):
         order.offset = 'open'
         order.volume = volume
         context.trader.order_booking(strategy_name, order, account, quotation = quotation)
-        print('quotation price lower than sma0 open short')
 
     # Update account and position information
     portfolio.process_normal_bar(quotation)

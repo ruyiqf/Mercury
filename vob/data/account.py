@@ -2,6 +2,7 @@
 
 import datetime
 import collections
+import copy
 from .portfolio import Portfolio
 from .settledata import SettleData
 
@@ -63,6 +64,10 @@ class Account(object):
     @property
     def available(self):
         return self._available_cash
+    @available.setter
+    def available(self, value):
+        if isinstance(value, float):
+            self._available_cash = value
 
     @property
     def rick_measure(self):
@@ -75,13 +80,14 @@ class Account(object):
         """
         for elt in self.portfolios:
             self.portfolios[elt].process_settle(bardata)
-        retlist.append((bardata.date, SettleData(self.__dict__)))
+
+        retlist.append((bardata.date, SettleData(copy.copy(self.__dict__))))
 
     def update_account(self):
         self._total_pnl = sum([v.pnl for v in self.portfolios.values()])
         self._total_margin = sum([v.margin for v in self.portfolios.values()])
         self._total_commission = sum([v.commission for v in self.portfolios.values()])
-        self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl - self._total_commission
+        self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
         self._risk_measure = self._total_margin / self._dynamic_equity
 
     def update_available(self, delta_margin):

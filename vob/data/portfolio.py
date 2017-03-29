@@ -63,9 +63,18 @@ class Portfolio(object):
         posi_long.lastprice = posi_short.lastprice = bardata.lastprice
         posi_long.update_margin()
         posi_short.update_margin()
+        
+        pre_pnl = self._pnl
         self._calculate_pnl()
+        delta_pnl = self._pnl - pre_pnl
         self._calculate_margin()
         self._account.update_account()
+
+        # Need update account available
+        self._account.available += delta_pnl
+        
+        print('date:%s, posi_long:%s' % (bardata.date, posi_long.__dict__))
+        print('date:%s, posi_short:%s' % (bardata.date, posi_short.__dict__))
        
     def _calculate_offset_pnl(self, instrument):
         """Calculate offest pnl
@@ -76,9 +85,16 @@ class Portfolio(object):
         self._offset_pnl = (min(posi_long.deal_quantity, posi_short.deal_quantity) *
                             (posi_short.avg_cost - posi_long.avg_cost) *
                             posi_long.multiplier)
+
+        pre_pnl = self._pnl
         self._calculate_pnl()
+        delta_pnl = self._pnl - pre_pnl
+
         self._calculate_margin()
         self._account.update_account()
+
+        # Need update account available
+        self._account.available += delta_pnl
 
     def _calculate_pnl(self):
         self._pnl = self._holding_pnl + self._offset_pnl
@@ -118,3 +134,6 @@ class Portfolio(object):
         :bardata: Bar data
         """
         self._calculate_holding_pnl(bardata)
+        print('date:%s, normal bar %s' % (bardata.date, self._account.__dict__))
+        print('date:%s, portfolio %s' % (bardata.date, self.__dict__))
+        

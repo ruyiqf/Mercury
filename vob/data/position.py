@@ -47,7 +47,6 @@ class Position(object):
         """
         self._yd_position += self._td_position
         self._td_position = 0
-        self._deal_quantity = 0
         self._avg_cost = settle_price if self._total_position > 0 else 0
         self._lastprice = settle_price
         
