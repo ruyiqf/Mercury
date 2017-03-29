@@ -47,6 +47,7 @@ class CommodityFuture(object):
                 rc.calculate()
                 output_file = os.path.join(self.results_dir, strategy_name+'_result.pk')
                 rc.ret_df.to_pickle(output_file)
+                rc.draw('test')
             except Exception as e:
                 traceback.print_exc()
                 print('encounter errors will return')
@@ -81,9 +82,8 @@ class CommodityFuture(object):
             handle_ctx.setDaemon(True)
             handle_ctx.start()
 
-        reciever = Thread(target=self.recv_results)
-        reciever.start()
-            
+        self.recv_results()
+
     def update_bundle(self, data_bundle_path=None, confirm=True):
         default_bundle_path = os.path.abspath(os.path.expanduser('~/.mercury/bundle/'))
         if data_bundle_path is None:
