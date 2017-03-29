@@ -60,14 +60,13 @@ Options:
 -d, --data-bundle-path DIRECTORY
 ```
 * 下载数据实例
+
 python start update_bundle
 
 ## 测试策略
 ```python
 python start.py run -f ./strategy -s 2016-09-01 -e 2017-03-07 -ic 1000000 -fq 1t -d ./vob/data -o ./result/
 ```
-* 测试结果
-![测试结果图片] img/test.png
 
 ## 技术支持和技术讨论
 QQ群：611039134
