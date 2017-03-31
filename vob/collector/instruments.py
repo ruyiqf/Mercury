@@ -10,6 +10,7 @@ import pandas as pd
 import collections
 import bcolz
 import numpy as np
+import time
 
 from pandas import DataFrame, Series
 
@@ -96,11 +97,17 @@ class CreateBasicInstruments(object):
         """
         self.parse_daily_ticker(path)
         self.accumulate_wind_ticker(csvpath)
+
+        #Debug code
+        program_sttime = time.time()
+        
         daily_ticker = dict(list(self.whole_q_df.groupby('symbol')))
-        keys1 = self.whole_wind_dict.keys()
-        keys2 = daily_ticker.keys()
+        keys1 = list(self.whole_wind_dict.keys())
+        keys2 = list(daily_ticker.keys())
         keys1.extend(keys2)
         all_key = set(keys1)
+        print(all_key)
+        print(len(all_key))
         for elt in all_key:
             if (elt in self.whole_wind_dict) and (elt in daily_ticker):
                 self.whole_wind_q_df[elt] = pd.concat([self.whole_wind_dict[elt],daily_ticker[elt]],
@@ -110,6 +117,11 @@ class CreateBasicInstruments(object):
             else:
                 self.whole_wind_q_df[elt] = daily_ticker[elt]
         self._generate_bcolzdata(self.whole_wind_q_df, outpath)
+
+        #Debug code
+        program_edtime = time.time()
+
+        print('difftime:%d' % (program_edtime - program_sttime))
 
     def _generate_instrument_pk(self, whole_df, outpath):
         """According to whole df, generate pickle data for instruments
@@ -220,7 +232,7 @@ class CreateBasicInstruments(object):
         attr_futures = bcolz.attrs.attrs(outpath+'futures.bcolz', 'wb')
         attr_futures['line_map'] = instrument_pos
         self._generate_instrument_pk(whole_dict, outpath)
-        os.remove('tmp.csv')
+        #os.remove('tmp.csv')
 
     def accumulate_wind_ticker(self, csvpath):
         """Clean data from wind
@@ -231,6 +243,7 @@ class CreateBasicInstruments(object):
         for elt in allfiles:
             tmplist = elt.split('.')
             contract = tmplist[0]
+            print(elt)
             df = pd.read_csv(os.path.join('%s%s'%(csvpath, elt)))
             df = df.dropna()
             df = df.reset_index()
