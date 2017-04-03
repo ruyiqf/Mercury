@@ -11,6 +11,7 @@ import collections
 import bcolz
 import numpy as np
 import time
+import traceback
 
 from pandas import DataFrame, Series
 
@@ -116,6 +117,7 @@ class CreateBasicInstruments(object):
                 self.whole_wind_q_df[elt] = self.whole_wind_dict[elt]
             else:
                 self.whole_wind_q_df[elt] = daily_ticker[elt]
+        print(self.whole_wind_q_df)
         self._generate_bcolzdata(self.whole_wind_q_df, outpath)
 
         #Debug code
@@ -155,14 +157,14 @@ class CreateBasicInstruments(object):
                 old_table = collections.defaultdict(pd.DataFrame)
                 for elt in index:
                     s,e = index[elt]
-                    old_table[elt] = pd.DataFram(table[s:e])
+                    old_table[elt] = pd.DataFrame(table[s:e])
                 #Merge new dict
                 for elt in self.whole_q_df:
                     if elt in old_table:
                         old_table[elt] = pd.concat(old_table[elt],
                                                    self.whole_q_df[elt],
                                                    ignore_index=True)
-                outpath = os.path.join(os.path.abspath('.'), 'data')
+                outpath = os.path.join(os.path.abspath('.'), 'data/')
                 if os.path.exists(outpath):
                     shutil.rmtree(outpath)
                     os.makedirs(outpath)
@@ -170,10 +172,7 @@ class CreateBasicInstruments(object):
                     os.makedirs(outpath)
                 self._generate_bcolzdata(old_table, outpath)
             except Exception as e:
-                print('Can not find futures.bcolz fine')
-            finally:
-                os.remove('instruments.pk')
-                os.remove('futures.bcolz')
+                traceback.print_exc()
         else:
             print('Data file not exists')
             return 
@@ -190,7 +189,8 @@ class CreateBasicInstruments(object):
         cursor = 0
         for elt in whole_dict:
             df = whole_dict[elt]
-            df = df.drop('index',axis=1)
+            if 'index' in df.columns:
+                df = df.drop('index',axis=1)
             df = df.reset_index()
             df = df.drop('index',axis=1)
             instrument_pos[elt].append(df.index[0]+cursor)
