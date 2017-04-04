@@ -17,6 +17,7 @@ class Portfolio(object):
         self._commission = 0
         self._margin = 0.0
         self._account = account #Father node point to account class
+        self._reverse_direction_map = {'long':'short', 'short':'long'}
 
     @property
     def positions(self):
@@ -109,13 +110,27 @@ class Portfolio(object):
         """Procedure of booking order when order is traded
         :order: Order class data
         """
-        cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
-        cur_posi.update_position(order)
+        print('euxyacg order:%s' % order.__dict__)
+
+        #Update reverse deal quantity
+        if order.offset == 'close' or order.offset == 'closetoday':
+            cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
+            reverse_posi = self._search_position_by_orderid(order.instrument+'-'+self._reverse_direction(order.direction))
+            reverse_posi.update_position(order)
+            cur_posi.deal_quantity += order.volume
+        elif order.offset == 'open':
+            cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
+            cur_posi.update_position(order)
+            cur_posi.deal_quantity += order.volume
+
         pre_margin = self._margin
         self._calculate_margin()
         delta_margin = self._margin - pre_margin
         self._account.update_available(delta_margin)
         self._account.update_account()
+
+    def _reverse_direction(self, direction):
+        return self._reverse_direction_map[direction]
 
     def process_settle(self, bardata):
         """Process settlement bardata
@@ -134,6 +149,6 @@ class Portfolio(object):
         :bardata: Bar data
         """
         self._calculate_holding_pnl(bardata)
-        print('date:%s, normal bar %s' % (bardata.date, self._account.__dict__))
+        print('date:%s, account %s' % (bardata.date, self._account.__dict__))
         print('date:%s, portfolio %s' % (bardata.date, self.__dict__))
         

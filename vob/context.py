@@ -140,11 +140,10 @@ class Context(object):
         self.event_bus.add_listeners(EVENT.NORMAL_TICKER_EVENT, self.scope['trade_logic']) 
         self.event_bus.add_listeners(EVENT.SETTLEMENT_EVENT, self.account.settlement)
         
-    def _search_by_date_from_bars(self, date, bars):
-        for elt in bars:
-            df = bars[elt]
-            if len(df[df.date == date]) > 0:
-                return df[df.date == date]
+    def _search_by_date_from_bars(self, date, instrument, bars):
+        df = bars[instrument]
+        if len(df[df.date == date]) > 0:
+            return df[df.date == date]
         raise SearchError()
 
     def run(self):
@@ -154,13 +153,14 @@ class Context(object):
         self._bars = bars
 
         trading_date_bar = self.data_proxy.get_trading_dates(bars)
+         
         self.register()
         for event in self.event_source.events(trading_date_bar, frequency=self.frequency):
             if event.event_type == EVENT.INIT_EVENT:
                 self.event_bus.pop_listeners(event.event_type, self)
                 continue
             try:
-                data = self._search_by_date_from_bars(event.data['date'], bars)
+                data = self._search_by_date_from_bars(event.data['date'], event.data['value'], bars)
                 bardata = BarData()
                 bardata.instrument = data.symbol.values[0]
                 bardata.lastprice = data.close.values[0]

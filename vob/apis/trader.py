@@ -40,12 +40,14 @@ class Trader(object):
                 return False
             return True
         elif order.offset == 'close':
-            order.direction = 'long' if order.direction == 'short' else 'short'
-            posid = order.instrument+'-'+order.direction
+            if order.direction == 'long':
+                posid = order.instrument+'-'+'short'
+            elif order.direction == 'short':
+                posid = order.instrument+'-'+'long'
             hold_posi_quantity = account.portfolios[strategy_name].positions[posid].total_position
             try:
                 assert order.volume > 0, 'close volume need greater than zero %d'%(order.volume)
-                assert order.volume < hold_posi_quantity, 'close volume need lower than hold posi quantity %d:%d'%(order.volume,
+                assert order.volume <= hold_posi_quantity, 'close volume need lower than hold posi quantity %d:%d'%(order.volume,
                 hold_posi_quantity)
             except AssertionError as e:
                 #print(e)

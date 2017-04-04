@@ -34,9 +34,9 @@ class DataProxy(object):
             ret_bar = symbol_bar[columns]
             df = pd.DataFrame(ret_bar, columns=columns)
 
-            df['date'] = pd.DatetimeIndex([x.decode('utf-8') for x in df['date'].values])
-            df['exchange'] = pd.Series([x.decode('utf-8') for x in df['exchange'].values])
-            df['symbol'] = pd.Series([x.decode('utf-8') for x in df['symbol'].values])
+            df['date'] = pd.DatetimeIndex([x for x in df['date'].values])
+            df['exchange'] = pd.Series([x for x in df['exchange'].values])
+            df['symbol'] = pd.Series([x for x in df['symbol'].values])
             
             s = datetime.datetime.strptime(start_date, '%Y-%m-%d')
             e = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -58,10 +58,13 @@ class DataProxy(object):
     def get_trading_dates(self, bars):
         """Extract date index from bars"""
         ret = pd.DatetimeIndex([])
+        instruments = list()
         for elt in bars:
             ret = ret.append(pd.DatetimeIndex(bars[elt].date.values))
-        ret = ret.sort_values()
-        return ret
+            instruments.extend(bars[elt].symbol.values)
+        df = pd.DataFrame({'time':ret, 'value':instruments})
+        df = df.sort_values('time')
+        return df
 
 """Test Code"""
 def main():

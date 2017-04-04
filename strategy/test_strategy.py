@@ -6,7 +6,7 @@ from vob.data import Order
 Core functions of strategy are init and trade_logic
 """
 def assets():
-    return ['IF1703']
+    return ['rb1705', 'ag1705']
 
 def init(context):
     """First need talib caculate index which whole strategies needed
