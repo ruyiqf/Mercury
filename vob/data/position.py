@@ -16,14 +16,12 @@ class Position(object):
         self._margin = 0.0
         self._lastprice = 0.0
 
-    def _calculate_avg_cost(self, order):
+    def calculate_avg_cost(self, order):
         self._avg_cost = (order.volume * order.price + 
                           self._avg_cost * self._deal_quantity) / (order.volume + self._deal_quantity)
-        #self._deal_quantity += order.volume
+        self._deal_quantity += order.volume
 
     def update_position(self, order):
-        #Update avg cost first
-        self._calculate_avg_cost(order) 
         #Update position by offset
         if order.offset == 'open':
             self._td_position += order.volume
@@ -48,6 +46,7 @@ class Position(object):
         self._yd_position += self._td_position
         self._td_position = 0
         self._avg_cost = settle_price if self._total_position > 0 else 0
+        self._deal_quantity = self._total_position
         self._lastprice = settle_price
         
     def update_margin(self):
@@ -77,9 +76,6 @@ class Position(object):
     @property
     def deal_quantity(self):
         return self._deal_quantity
-    @deal_quantity.setter
-    def deal_quantity(self, value):
-        self._deal_quantity = value
 
     @property
     def avg_cost(self):

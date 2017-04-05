@@ -26,7 +26,7 @@ class EventSource(object):
                 else:
                     ticker = datebar.ix[xi].time
                     ticker_next = datebar.ix[xi+1].time
-                    if (ticker_next.to_pydatetime() - ticker.to_pydatetime()) > datetime.timedelta(hours=8):
+                    if (ticker_next.to_pydatetime() - ticker.to_pydatetime()) > datetime.timedelta(hours=5):
                         yield Event(EVENT.SETTLEMENT_EVENT, data={'date':datebar.ix[xi].time, 
                                                                   'value':datebar.ix[xi].value})
         else:

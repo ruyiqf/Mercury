@@ -84,15 +84,13 @@ class Account(object):
         retlist.append((bardata.date, SettleData(copy.copy(self.__dict__))))
 
     def update_account(self):
+        pre_pnl = self._total_pnl
         self._total_pnl = sum([v.pnl for v in self.portfolios.values()])
+        delta_pnl = self._total_pnl - pre_pnl
+        pre_margin = self._total_margin
         self._total_margin = sum([v.margin for v in self.portfolios.values()])
+        delta_margin = pre_margin - self._total_margin
         self._total_commission = sum([v.commission for v in self.portfolios.values()])
-        self._dynamic_equity = self._available_cash + self._total_margin + self._total_pnl
+        self._available_cash = self._available_cash + delta_pnl + delta_margin
+        self._dynamic_equity = self._available_cash + self._total_margin
         self._risk_measure = self._total_margin / self._dynamic_equity
-
-    def update_available(self, delta_margin):
-        """For portfolio available_cash is viewing, so need this interface
-        :delta_margin: change of margin in portfolio
-        """
-        self._available_cash -= delta_margin
-        

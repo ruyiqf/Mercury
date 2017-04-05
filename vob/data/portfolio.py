@@ -65,37 +65,23 @@ class Portfolio(object):
         posi_long.update_margin()
         posi_short.update_margin()
         
-        pre_pnl = self._pnl
         self._calculate_pnl()
-        delta_pnl = self._pnl - pre_pnl
         self._calculate_margin()
         self._account.update_account()
-
-        # Need update account available
-        self._account.available += delta_pnl
         
-        print('date:%s, posi_long:%s' % (bardata.date, posi_long.__dict__))
-        print('date:%s, posi_short:%s' % (bardata.date, posi_short.__dict__))
+        #print('date:%s, posi_long:%s' % (bardata.date, posi_long.__dict__))
+        #print('date:%s, posi_short:%s' % (bardata.date, posi_short.__dict__))
        
     def _calculate_offset_pnl(self, instrument):
         """Calculate offest pnl
         :instrument: contract name
         """
-        posi_long = self._search_position_by_order(instrument+'-'+'long')
-        posi_short = self._search_position_by_order(instrument+'-'+'short')
+        posi_long = self._search_position_by_orderid(instrument+'-'+'long')
+        posi_short = self._search_position_by_orderid(instrument+'-'+'short')
         self._offset_pnl = (min(posi_long.deal_quantity, posi_short.deal_quantity) *
                             (posi_short.avg_cost - posi_long.avg_cost) *
                             posi_long.multiplier)
-
-        pre_pnl = self._pnl
         self._calculate_pnl()
-        delta_pnl = self._pnl - pre_pnl
-
-        self._calculate_margin()
-        self._account.update_account()
-
-        # Need update account available
-        self._account.available += delta_pnl
 
     def _calculate_pnl(self):
         self._pnl = self._holding_pnl + self._offset_pnl
@@ -110,23 +96,18 @@ class Portfolio(object):
         """Procedure of booking order when order is traded
         :order: Order class data
         """
-        print('euxyacg order:%s' % order.__dict__)
-
         #Update reverse deal quantity
         if order.offset == 'close' or order.offset == 'closetoday':
             cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
+            cur_posi.calculate_avg_cost(order)
             reverse_posi = self._search_position_by_orderid(order.instrument+'-'+self._reverse_direction(order.direction))
             reverse_posi.update_position(order)
-            cur_posi.deal_quantity += order.volume
+            self._calculate_offset_pnl(order.instrument)
         elif order.offset == 'open':
             cur_posi = self._search_position_by_orderid(order.instrument+'-'+order.direction)
+            cur_posi.calculate_avg_cost(order)
             cur_posi.update_position(order)
-            cur_posi.deal_quantity += order.volume
-
-        pre_margin = self._margin
         self._calculate_margin()
-        delta_margin = self._margin - pre_margin
-        self._account.update_available(delta_margin)
         self._account.update_account()
 
     def _reverse_direction(self, direction):
@@ -136,19 +117,27 @@ class Portfolio(object):
         """Process settlement bardata
         :bardata: Bar data
         """
+        print('process settlement')
+        
         #Temparorily use last price as settlement price, so first procedure is like normal bar
         self._calculate_holding_pnl(bardata)
         self._account.static_equity = self._account.dynamic_equity
+        #Portfolio pnl need be clean
+        self._holding_pnl = self._offset_pnl = self._pnl = 0
         cur_long = self._search_position_by_orderid(bardata.instrument+'-'+'long')
         cur_short = self._search_position_by_orderid(bardata.instrument+'-'+'short')
         cur_long.move_td2yd_position(bardata.lastprice)
         cur_short.move_td2yd_position(bardata.lastprice)
+        #print('after settle portfolio:%s' % self.__dict__)
+        #print('after settle account:%s' % self._account.__dict__)
+        #print('after settle posi_long:%s' % cur_long.__dict__)
+        #print('after settle posi_short:%s' % cur_short.__dict__)
 
     def process_normal_bar(self, bardata):
         """Process normal bardata event
         :bardata: Bar data
         """
         self._calculate_holding_pnl(bardata)
-        print('date:%s, account %s' % (bardata.date, self._account.__dict__))
-        print('date:%s, portfolio %s' % (bardata.date, self.__dict__))
+        #print('date:%s, account %s' % (bardata.date, self._account.__dict__))
+        #print('date:%s, portfolio %s' % (bardata.date, self.__dict__))
         

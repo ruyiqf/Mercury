@@ -36,6 +36,7 @@ class RiskCal(object):
         self._max_drawdown = max(daily_net_worth) - min(daily_net_worth) 
         self._sharpe = (np.mean(daily_net_worth) - self._riskfree_returns) / self._volatility
         self._ret_df = pd.DataFrame({'net_worth':daily_net_worth}, index=date_index)
+        self._ret_df = self._ret_df.sort_index()
     
     def draw(self, title):
         import matplotlib
@@ -54,7 +55,7 @@ class RiskCal(object):
         label_height, value_height = 0.8, 0.6
         fig_data = [
             (0.00, label_height, value_height, 'Max Down', '{0:.3%}'.format(self._max_drawdown), red, black),
-            (0.30, label_height, value_height, 'Sharpe', '{0:.4%}'.format(self._sharpe), red, black),
+            (0.30, label_height, value_height, 'Sharpe', '{0:.3}'.format(self._sharpe), red, black),
             (0.60, label_height, value_height, 'Volatility',  '{0:3%}'.format(self._volatility), red, black)]
        
         ax = plt.subplot(gs[:3, :-1])
