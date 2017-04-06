@@ -67,6 +67,12 @@ class DataProxy(object):
         df = pd.DataFrame({'time':ret, 'value':instruments})
         df = df.sort_values('time')
         return df
+    
+    def get_all_trading_bars(self, start_date, end_date):
+        ret = collections.defaultdict(pd.DataFrame)
+        for elt in self._instruments.keys():
+            ret[elt] = self._get_one_trading_bar(elt, start_date, end_date)
+        return ret
 
 """Test Code"""
 def main():

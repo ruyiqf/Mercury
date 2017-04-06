@@ -57,13 +57,30 @@ class CommodityFuture(object):
         """
         allfiles = os.listdir(os.path.abspath(config.strategy_dir))
         fsl = FileStrategyLoader()
+        data_proxy = DataProxy(os.path.abspath(config.data_bundle_path))
         for elt in allfiles:
             source = fsl.load(os.path.join(os.path.abspath(config.strategy_dir),elt),{})
+            context = Context()
+            context.scope = source
+            context.data_proxy = data_proxy
+            context.account = Account(initcash=config.initial_cash, start_date=config.start_date, end_date=config.end_date)
+            context.event_source = EventSource()
+            context.event_bus = EventBus()
+            context.start_date = config.start_date
+            context.end_date = config.end_date
+            context.frequency = config.frequency
+            context.trade_mode = 'real'
+            context.quotation = Quotation()
+            context.trader = Trader()
+            context.strategy_name = elt.split('.')[0]
+            handle_ctx = Thread(target=context.firm_bargain)
+            handle_ctx.setDaemon(True)
+            handle_ctx.start()
+            
 
     def run(self, config):
         """Run strategy main function
         """
-        print(config)        
         allfiles = os.listdir(os.path.abspath(config.strategy_dir))
         fsl = FileStrategyLoader()
         data_proxy = DataProxy(os.path.abspath(config.data_bundle_path))

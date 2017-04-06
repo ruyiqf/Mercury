@@ -6,6 +6,8 @@ from .data import DataProxy, Account, BarData
 from .event import EventSource, EventBus, EVENT
 from .apis import Trader, Quotation 
 from .exception import SearchError
+from .receiver import ReceiverQuotation 
+from .protocol import TickData
 
 class Context(object):
     """Need say something Wow, will replace environment object"""
@@ -24,11 +26,20 @@ class Context(object):
         self._bars = None # Dict {instrument:df}
         self._results_q = None # When initializing, will setting queue
         self._ret_list = list()
+        self._trade_mode = 'mock' # Trade mode will be transferred to order booking
     
     def __setter__(self, name, value):
         """Connect strategy functions, here not check validation of values"""
         self.__dict__[name] = value
     
+    @property
+    def trade_mode(self):
+        return self._trade_mode
+    @trade_mode.setter
+    def trade_mode(self, value):
+        if isinstance(value, str):
+            self._trade_mode = value
+
     @property
     def results_q(self):
         return self._results_q
@@ -146,6 +157,12 @@ class Context(object):
             return df[df.date == date]
         raise SearchError()
 
+    def firm_bargain(self):
+        """Using for real trade with trading system"""
+        rq = ReceiverQuotation()
+        socket = rq.socket
+        mdaddr = rq.mdaddress
+    
     def run(self):
         bars = self.data_proxy.get_trading_bars(self.scope['assets'](),
                                                 self.start_date,

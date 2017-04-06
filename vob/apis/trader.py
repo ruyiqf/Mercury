@@ -4,8 +4,8 @@ class Trader(object):
     def __init__(self):
         pass
     
-    def order_booking(self, strategy_name, order, account, quotation=None, trade_mod='mock'):
-        """Simulate order booking, but have reservation for real trade flag trade_mod ['mock', 'real']
+    def order_booking(self, strategy_name, order, account, quotation=None, trade_mode='mock'):
+        """Simulate order booking, but have reservation for real trade flag trade_mode ['mock', 'real']
         :strategy_name: seperate strategy when ordering
         :order: order class data
         :account: corresponding strategy

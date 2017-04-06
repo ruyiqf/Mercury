@@ -59,6 +59,10 @@ def run(**kwargs):
 @cli.command()
 @click.help_option('-h', '--help')
 @click.option('-f', '--strategy-dir', type=click.Path(exists=True))
+@click.option('-s', '--start-date', type=click.STRING)
+@click.option('-e', '--end-date', type=click.STRING)
+@click.option('-ic', '--initial-cash', type=click.FLOAT)
+@click.option('-fq', '--frequency', default=None, type=click.STRING)
 def firm_bargain(**kwargs):
     """
     Actually use stratregy trading with system

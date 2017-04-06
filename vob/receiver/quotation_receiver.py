@@ -2,16 +2,21 @@
 import json
 import zmq
 import datetime
-from ..protocol import TickData
 
 class ReceiverQuatation(object):
 
     def __init__(self):
-        self.ctx = zmq.Context()
-        self.mdsocket = ctx.socket(zmq.SUB)
-        self.mdsocket.setsocketopt(zmq.SUBSCRIBE,'')
+        self._ctx = zmq.Context()
+        self._mdsocket = ctx.socket(zmq.SUB)
+        self._mdsocket.setsocketopt(zmq.SUBSCRIBE,'')
         with open('europa.json','r') as f:
-            self.conf = json.load(f)
+            self._conf = json.load(f)
+
+    @property
+    def sockect(self):
+        return self._mdsocket
     
-    def start_recv_data(self):
-        pass
+    @property
+    def mdaddress(self):
+        return self._conf['mdaddr']
+    
