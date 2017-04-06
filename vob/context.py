@@ -177,4 +177,3 @@ class Context(object):
 
         self._results_q.put((self._strategy_name, self._ret_list))
         end = time.time()
-        

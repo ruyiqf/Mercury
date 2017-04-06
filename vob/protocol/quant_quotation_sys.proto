@@ -1,0 +1,37 @@
+message TickData {
+    required string symbol = 1;
+    required string exchange = 2;
+    required double lastPrice = 3;
+    optional int64 lastVolume = 4;
+    required int64 volume = 5;
+    required double openInterest = 6;
+    required string time = 7;
+    required string date = 8;
+    required double openPrice = 9;
+    required double highPrice = 10;
+    required double lowPrice = 11;
+    required double preClosePrice = 12;
+    required double upperLimit = 13;
+    required double lowerLimit = 14; 
+    required double bidPrice1 = 15; 
+    optional double bidPrice2 = 16; 
+    optional double bidPrice3 = 17;
+    optional double bidPrice4 = 18;
+    optional double bidPrice5 = 19;
+    required double askPrice1 = 20; 
+    optional double askPrice2 = 21; 
+    optional double askPrice3 = 22; 
+    optional double askPrice4 = 23; 
+    optional double askPrice5 = 24;
+    required int64 bidVolume1 = 25;
+    optional int64 bidVolume2 = 26;
+    optional int64 bidVolume3 = 27;
+    optional int64 bidVolume4 = 28;
+    optional int64 bidVolume5 = 29;
+    required int64 askVolume1 = 30;
+    optional int64 askVolume2 = 31;
+    optional int64 askVolume3 = 32;
+    optional int64 askVolume4 = 33;
+    optional int64 askVolume5 = 34;
+    optional string dataType = 35;
+}

@@ -44,6 +44,8 @@ class DataProxy(object):
             bar = ret[ret.date<=e]
 
             #Data bar is dataframe format with natural index
+            bar = bar.reset_index()
+            bar = bar.drop('index', axis=1)
             return bar
         except KeyError as e:
             print('May be not find symbol:%s' % symbol)

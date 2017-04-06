@@ -55,6 +55,17 @@ def run(**kwargs):
     cf = CommodityFuture()
     conf = Config(kwargs)
     cf.run(conf)
-     
+
+@cli.command()
+@click.help_option('-h', '--help')
+@click.option('-f', '--strategy-dir', type=click.Path(exists=True))
+def firm_bargain(**kwargs):
+    """
+    Actually use stratregy trading with system
+    """
+    cf = CommodifyFuture()
+    conf = Config(kwargs)
+    cf.firm_bargain(conf)
+
 if __name__ == '__main__':
     entry_point()

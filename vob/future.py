@@ -52,6 +52,14 @@ class CommodityFuture(object):
                 traceback.print_exc()
                 print('encounter errors will return')
        
+    def firm_bargain(self, config):
+        """Uset strategy real trading with system
+        """
+        allfiles = os.listdir(os.path.abspath(config.strategy_dir))
+        fsl = FileStrategyLoader()
+        for elt in allfiles:
+            source = fsl.load(os.path.join(os.path.abspath(config.strategy_dir),elt),{})
+
     def run(self, config):
         """Run strategy main function
         """

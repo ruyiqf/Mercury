@@ -1,0 +1,124 @@
+message CtpRtnOrder {
+    required string symbol = 1;
+    required string exchange = 2; 
+    required string orderID = 3;
+    required bytes direction = 4;
+    required bytes offset = 5;
+    required float price = 6;
+    required int32 totalVolume = 7;
+    required int32 tradedVolume = 8;
+    optional int32 remainVolume = 9;
+    required bytes status = 10;
+    required string orderTime = 11;
+    optional string cancelTime = 12;
+    required int64 requestID = 13;
+    required int64 frontID = 14;
+    required int64 sessionID = 15;
+    optional string dataType = 16;
+}
+
+message ReqOrder {
+    required string symbol = 1;
+    required string direction = 2; 
+    required string offset = 3;
+    required int32 volume = 4;
+    required string orderstyle = 5;
+    required string ordertype = 6;
+    required string strategyname = 7;
+    required string signalid = 8;
+    required string sendtime = 9;
+    optional int32 childid = 10;
+    optional int32 parentid = 11;
+    required float price = 12;
+    required string pricetype = 13;
+    required string uuid = 14;
+    required string clientid = 15;
+}
+
+message RspOrder {
+    required string symbol = 1;
+    required string uuid = 2;
+    optional string sendtime = 3;
+    required string clientid = 4;
+    required string signalid = 5;
+    required string strategyname = 6;
+    required int32 parentid = 7;
+    required int32 childid = 8;
+}
+
+message CancelOrder {
+    required string symbol = 1;
+    required string exchange = 2;
+    required string orderID = 3;
+    required int64 frontID = 4;
+    required int64 sessionID = 5;
+    optional string dataType = 6;
+    required string uuid = 7;
+}
+
+message CancelRspOrder {
+    required string symbol = 1;
+    required string orderID = 2; 
+    required string uuid = 3;
+}
+
+message CtpRtnTrade {
+    required string symbol = 1;
+    required string exchange = 2;
+    required string tradeID = 3;
+    required string orderID = 4;
+    required bytes direction = 5;
+    required bytes offset = 6;
+    required float price = 7;
+    required int32 volume = 8;
+    required string tradeTime = 9;
+    optional string dataType = 10;
+}
+
+message PosiRspData {
+    required string symbol = 1;
+    required string direction = 2; 
+    required int32 position = 3;
+    required int32 frozen = 4;
+    required float price = 5;
+    required int32 ydposition = 6;
+    required int32 tdposition = 7;
+}
+
+message AccountRspData {
+    required string accountid = 1;
+    required float prebalance = 2;
+    required float available = 3;
+    required float commission = 4;
+    required float margin = 5;
+    required float closeprofit = 6;
+    required float positionprofit = 7;
+}
+
+message AlgoTrading {
+    required string msgtype = 1;
+    optional string posreq = 2;
+    repeated ReqOrder order = 3;
+    repeated CancelOrder cancelorder = 4;
+    repeated RspOrder sorspinfo = 5;
+    repeated CtpRtnTrade tradeinfo = 6;
+    repeated CancelRspOrder corspinfo = 7;
+    repeated CtpRtnOrder orderinfo = 8;
+    repeated PosiRspData posrspdata = 9;
+    repeated AccountRspData accountinfo = 10;
+}
+
+message StrategyInfo {
+    required string msgtype = 1;
+    required string strategyname = 2;
+    required string instrument = 3;
+    required string clientid = 4;
+    optional int32 volume = 5;
+    optional string direction = 6;
+    optional string offset = 7;
+    optional float price = 8;
+    optional string time = 9;
+    optional string exchange = 10;
+}
+
+
