@@ -8,11 +8,12 @@ Mercury 数据分析系统
 
 数据源：Tushare
 
-# 期货回测系统
+# 期货回测+交易系统
 
 * 支持多合约回测，多合约组合成为一个Portfolio进行独立回测
 * 支持多策略回测，在一个Account下面可以组合多个Portfolio同时回测
 * 支持Ticker级别的回测
+* 项目已经实现回测和交易系统的统一，可以用同一套策略代码实现回测和交易，目前交易系统尚未开源，有需要的可以加入技术交流群联系作者
 
 ## 开发环境
 MacOS Python3.6 Python3.5也可以运行
@@ -67,6 +68,12 @@ python start update_bundle
 ```python
 python start.py run -f ./strategy -s 2016-09-01 -e 2017-03-07 -ic 1000000 -fq 1t -d ./vob/data -o ./result/
 ```
+## 交易
+```python
+python start.py firm_bargain -f ./unit_test -s 2017-03-07 -e 2017-04-07 -ic 1000000 -fq 1t -d /Users/ruyiqf/winddata/data/
+```
+
+## 
 
 ## 技术支持和技术讨论
 QQ群：611039134
