@@ -167,45 +167,47 @@ class Context(object):
     def firm_bargain(self):
         """Using for real trade with trading system"""
         bars = self.data_proxy.get_all_trading_bars(self.start_date, self.end_date)
+        print('after getting bars')
         rq = ReceiverQuotation()
         socket = rq.socket
         mdaddr = rq.mdaddress
-        sockect.connect(mdaddr)
+        socket.connect(mdaddr)
         self.register()
 
         while True:
-            ticker = mdsocket.recv()
+            ticker = socket.recv()
             data = TickData()
             data.ParseFromString(ticker)
             bar = bars[data.symbol]
+            print(bar)
             
             bar.loc[bar.index.size] = [None for x in bar.columns]
-            bar.loc[bar.index.size-1]['symbol'] = data.symbol
-            bar.loc[bar.index.size-1]['open'] = self._is_price_reasonable(data.openPrice)
-            bar.loc[bar.index.size-1]['exchange'] = data.exchange
-            bar.loc[bar.index.size-1]['lastprice'] = self._is_price_reasonable(data.lastPrice)
-            bar.loc[bar.index.size-1]['high'] = self._is_price(data.highPrice)
-            bar.loc[bar.index.size-1]['close'] = self._is_price(data.preClosePrice)
-            bar.loc[bar.index.size-1]['low'] = self._is_price(data.lowPrice)
-            bar.loc[bar.index.size-1]['volume'] = data.volume
-            bar.loc[bar.index.size-1]['bid'] = self._is_price(data.bidPrice1)
-            bar.loc[bar.index.size-1]['ask'] = self._is_price(data.askPirce1)
-            bar.loc[bar.index.size-1]['date'] = np.datetime64(datetime.datetime.now())
-            bar.loc[bar.index.size-1]['uppderlimit'] = self._is_price(data.upperLimit)
-            bar.loc[bar.index.size-1]['lowderlimit'] = self._is_price(data.lowerLimit)
-            bar.loc[bar.index.size-1]['bidvolume'] = data.bidVolume1
-            bar.loc[bar.index.size-1]['askvolume'] = data.askVolume1
-            bar.loc[bar.index.size-1]['oi'] = data.openInterest
+            bar.loc[bar.index.size-1,'symbol'] = data.symbol
+            bar.loc[bar.index.size-1,'open'] = self._is_price_reasonable(data.openPrice)
+            bar.loc[bar.index.size-1,'exchange'] = data.exchange
+            bar.loc[bar.index.size-1,'lastprice'] = self._is_price_reasonable(data.lastPrice)
+            bar.loc[bar.index.size-1,'high'] = self._is_price_reasonable(data.highPrice)
+            bar.loc[bar.index.size-1,'close'] = self._is_price_reasonable(data.preClosePrice)
+            bar.loc[bar.index.size-1,'low'] = self._is_price_reasonable(data.lowPrice)
+            bar.loc[bar.index.size-1,'volume'] = data.volume
+            bar.loc[bar.index.size-1,'bid'] = self._is_price_reasonable(data.bidPrice1)
+            bar.loc[bar.index.size-1,'ask'] = self._is_price_reasonable(data.askPrice1)
+            bar.loc[bar.index.size-1,'date'] = np.datetime64(datetime.datetime.now())
+            bar.loc[bar.index.size-1,'uppderlimit'] = self._is_price_reasonable(data.upperLimit)
+            bar.loc[bar.index.size-1,'lowderlimit'] = self._is_price_reasonable(data.lowerLimit)
+            bar.loc[bar.index.size-1,'bidvolume'] = data.bidVolume1
+            bar.loc[bar.index.size-1,'askvolume'] = data.askVolume1
+            bar.loc[bar.index.size-1,'oi'] = data.openInterest
             
             objects = self.scope['assets']()
 
             bardata = BarData()
             bardata.instrument = data.symbol
             bardata.bid = self._is_price_reasonable(data.bidPrice1)
-            bardata.ask = self._is_price_reasonable(data.askPrice1):w
+            bardata.ask = self._is_price_reasonable(data.askPrice1)
             bardata.bidvolume = int(data.bidVolume1)
             bardata.askvolume = int(data.askVolume1)
-            bardata.date = datatime.datatime.now()
+            bardata.date = datetime.datetime.now()
             bardata.margin_ratio = self.data_proxy.instruments[bardata.instrument].margin_rate
             bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
             bardata.volume = int(data.volume)

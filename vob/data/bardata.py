@@ -36,16 +36,18 @@ class BarData(object):
     @property
     def bidvolume(self):
         return self._bidvolume
-    @bidvolume.setter(self, value):
+    @bidvolume.setter
+    def bidvolume(self, value):
         if isinstance(value, int):
             self._bidvolume = value
 
     @property
     def askvolume(self):
         return self._askvolume
-    @askvolume.setter(self, value):
+    @askvolume.setter
+    def askvolume(self, value):
         if isinstance(value, int):
-            selfk._askvolume = value
+            self._askvolume = value
 
     @property
     def volume(self):

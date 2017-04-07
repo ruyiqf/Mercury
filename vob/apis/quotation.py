@@ -9,30 +9,13 @@ class Quotation(object):
     def __init__(self):
         pass
 
-    def update_bar_by_quotation(self, databar, period, indicator, quotation):
+    def update_bar_by_quotation(self, databar, period, indicator):
         """Under actually trading mode, need update databar and indicatiors
         :databar: history raw data
         :period: time interval
         :indicator: ['sma', 'atr' ...]
         :quotataion: latest quotation data which is slice of original databars axis=0
         """
-        databar.loc[databar.index.size] = [None for x in databar.columns]
-        databar.loc[databar.index.size-1]['symbol'] = quotation.symbol
-        databar.loc[databar.index.size-1]['open'] = quotation.openprice
-        databar.loc[databar.index.size-1]['exchange'] = quotation.exchange
-        databar.loc[databar.index.size-1]['lastprice'] = quotation.lastprice
-        databar.loc[databar.index.size-1]['high'] = quotation.high
-        databar.loc[databar.index.size-1]['close'] = quotation.close
-        databar.loc[databar.index.size-1]['low'] = quotation.low
-        databar.loc[databar.index.size-1]['volume'] = quotation.volume
-        databar.loc[databar.index.size-1]['bid'] = quotation.bid
-        databar.loc[databar.index.size-1]['ask'] = quotation.ask
-        databar.loc[databar.index.size-1]['date'] = quotation.date
-        databar.loc[databar.index.size-1]['uppderlimit'] = quotation.uppderlimit
-        databar.loc[databar.index.size-1]['lowderlimit'] = quotation.lowderlimit
-        databar.loc[databar.index.size-1]['bidvolume'] = quotation.bidvolume
-        databar.loc[databar.index.size-1]['askvolume'] = quotation.askvolume
-        databar.loc[databar.index.size-1]['oi'] = quotation.openinterest
         return self.hisotry(databar, period, indicator)
         
     def history(self, databar, period, indicator):

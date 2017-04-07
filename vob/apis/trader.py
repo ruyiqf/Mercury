@@ -1,7 +1,7 @@
 #coding:utf-8
 
-from quant_client_sys import ClientReqOrder, OrderList
-from sender_trade import SenderTrade
+from .quant_client_sys_pb2 import ClientReqOrder, OrderList
+from .sender_trade import SenderTrade
 
 class Trader(object):
     def __init__(self, trade_mode):

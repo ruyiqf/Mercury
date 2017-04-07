@@ -3,17 +3,17 @@ import json
 import zmq
 import datetime
 
-class ReceiverQuatation(object):
+class ReceiverQuotation(object):
 
     def __init__(self):
         self._ctx = zmq.Context()
-        self._mdsocket = ctx.socket(zmq.SUB)
-        self._mdsocket.setsocketopt(zmq.SUBSCRIBE,'')
-        with open('europa.json','r') as f:
+        self._mdsocket = self._ctx.socket(zmq.SUB)
+        self._mdsocket.setsockopt_string(zmq.SUBSCRIBE, '')
+        with open('quotation.json','r') as f:
             self._conf = json.load(f)
 
     @property
-    def sockect(self):
+    def socket(self):
         return self._mdsocket
     
     @property

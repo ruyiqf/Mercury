@@ -9,7 +9,7 @@ class SenderTrade(object):
         self._socket = self._ctx.socket(zmq.PUB)
         with open('trader.json', 'r') as f:
             self._conf = json.load(f)
-        self._socket.connect(self._conf['tdaddr'])
+        self._socket.connect(self._conf['tdwatcher'])
     
     def send(self, msg):
         self._socket.send_string(msg)

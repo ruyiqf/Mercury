@@ -71,12 +71,15 @@ class CommodityFuture(object):
             context.frequency = config.frequency
             context.trade_mode = 'real'
             context.quotation = Quotation()
-            context.trader = Trader()
+            context.trader = Trader(context.trade_mode)
+            print('recv data before')
             context.strategy_name = elt.split('.')[0]
             handle_ctx = Thread(target=context.firm_bargain)
             handle_ctx.setDaemon(True)
             handle_ctx.start()
             
+        while True:
+           time.sleep(1)
 
     def run(self, config):
         """Run strategy main function
@@ -101,7 +104,7 @@ class CommodityFuture(object):
             context.frequency = config.frequency
             context.results_q = self.results_q
             context.quotation = Quotation()
-            context.trader = Trader()
+            context.trader = Trader(context.trde_mode)
             context.strategy_name = elt.split('.')[0]
             handle_ctx = Thread(target=context.run)
             handle_ctx.setDaemon(True)

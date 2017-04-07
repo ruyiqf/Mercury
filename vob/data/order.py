@@ -6,7 +6,45 @@ class Order(object):
         self._direction = None
         self._offset = None
         self._volume = 0
-    
+
+        # Using for firm bargain
+        self._strategy_name = None
+        self._algotype = None
+        self._orderstyle = None
+        self._maxcancelnum = 0
+        
+    @property
+    def strategy_name(self):
+        return self._strategy_name
+    @strategy_name.setter
+    def strategy_name(self, value):
+        if isinstance(value, str):
+            self._strategy_name = value
+
+    @property
+    def algotype(self):
+        return self._algotype
+    @algotype.setter
+    def algotype(self, value):
+        if isinstance(value, str):
+            self._algotype = value
+
+    @property
+    def orderstyle(self):
+        return self._orderstyle
+    @orderstyle.setter
+    def orderstyle(self, value):
+        if isinstance(value, str):
+            self._orderstyle = value
+
+    @property
+    def maxcancelnum(self):
+        return self._maxcancelnum
+    @maxcancelnum.setter
+    def maxcancelnum(self, value):
+        if isinstance(value, int):
+            self._maxcancelnum = value
+
     @property
     def instrument(self):
         return self._instrument

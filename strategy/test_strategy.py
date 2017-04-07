@@ -43,7 +43,7 @@ def trade_logic(context, quotation):
         order.offset = 'close'
         order.instrument = instrument
         #print('lastprice lower than atr close short order.volume:%d' % order.volume)
-        context.trader.order_booking(strategy_name, order, account, quotation = quotation, trade_mode = context.trade_mode)
+        context.trader.order_booking(strategy_name, order, account, quotation = quotation)
     elif lastprice > posi_short.avg_cost + 2 * atr:
         order = Order()
         order.price = quotation.lastprice
@@ -51,7 +51,7 @@ def trade_logic(context, quotation):
         order.direction = 'long'
         order.offset = 'close'
         order.instrument = instrument
-        context.trader.order_booking(strategy_name, order, account, quotation = quotation, trade_mode = context.trade_mode)
+        context.trader.order_booking(strategy_name, order, account, quotation = quotation)
         #print('lastprice greater than atr close long order.volume:%d' % order.volume)
     
     # Breaking system

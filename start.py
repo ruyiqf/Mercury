@@ -58,6 +58,7 @@ def run(**kwargs):
 
 @cli.command()
 @click.help_option('-h', '--help')
+@click.option('-d', '--data-bundle-path', type=click.Path(exists=True))
 @click.option('-f', '--strategy-dir', type=click.Path(exists=True))
 @click.option('-s', '--start-date', type=click.STRING)
 @click.option('-e', '--end-date', type=click.STRING)
@@ -67,7 +68,7 @@ def firm_bargain(**kwargs):
     """
     Actually use stratregy trading with system
     """
-    cf = CommodifyFuture()
+    cf = CommodityFuture()
     conf = Config(kwargs)
     cf.firm_bargain(conf)
 
