@@ -10,7 +10,43 @@ class BarData(object):
         self._multiplier = 0.0
         self._date = None
         self._volume = 0
+
+        #Using firm bargain
+        self._bid = 0.0
+        self._ask = 0.0
+        self._bidvolume = 0.0
+        self._askvolume = 0.0
+
+    @property
+    def bid(self):
+        return self._bid
+    @bid.setter
+    def bid(self, value):
+        if isinstance(value, float):
+            self._bid = value
     
+    @property
+    def ask(self):
+        return ask
+    @ask.setter
+    def ask(self, value):
+        if isinstance(value, float):
+            self._ask = value
+
+    @property
+    def bidvolume(self):
+        return self._bidvolume
+    @bidvolume.setter(self, value):
+        if isinstance(value, int):
+            self._bidvolume = value
+
+    @property
+    def askvolume(self):
+        return self._askvolume
+    @askvolume.setter(self, value):
+        if isinstance(value, int):
+            selfk._askvolume = value
+
     @property
     def volume(self):
         return self._volume

@@ -1,0 +1,23 @@
+message ClientReqOrder {
+    required string instrument = 1;
+    required string direction = 2;
+    required int32 sinterval = 3;
+    required int32 volume = 4;
+    required string price = 5;
+    required string algotype = 6;
+    required string offset = 7;
+    required string strategyname = 8;
+    required int32 size = 9;
+    required int32 wttime = 10;
+    required string signalid = 11;
+    required string pricetype = 12;
+    required string clientid = 13;
+    required string orderstyle = 14;
+    required int32 maxcancelnum = 15;
+    optional string sendtime = 16;
+}
+
+message OrderList {
+    repeated ClientReqOrder orders = 2;
+}
+

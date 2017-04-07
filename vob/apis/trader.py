@@ -1,10 +1,15 @@
 #coding:utf-8
 
+from quant_client_sys import ClientReqOrder, OrderList
+from sender_trade import SenderTrade
+
 class Trader(object):
-    def __init__(self):
-        pass
-    
-    def order_booking(self, strategy_name, order, account, quotation=None, trade_mode='mock'):
+    def __init__(self, trade_mode):
+        self._trade_mode = trade_mode
+        if trade_mode == 'real':
+            self.sender = SenderTrade() 
+
+    def order_booking(self, strategy_name, order, account, quotation=None):
         """Simulate order booking, but have reservation for real trade flag trade_mode ['mock', 'real']
         :strategy_name: seperate strategy when ordering
         :order: order class data
@@ -12,11 +17,29 @@ class Trader(object):
         :quotation: only meaningful under mock
         :trade_mode: revervation of switching between mock-trading and real-trading
         """
-        if trade_mod == 'mock':
+        if self._trade_mod == 'mock':
             if self._validate_order(order, account, quotation, strategy_name):
                 account.portfolios[strategy_name].process_order(order)
-        elif trade_mod == 'real':
-            print('Need connect trading system later')
+
+        elif self._trade_mod == 'real':
+            orderlist = OrderList()
+            content = orderlist.orders.add()
+            content.instrument = order.instrument
+            content.direction = 'dlong' if order.direction == 'long' else 'dshort'
+            content.sinterval = order.sinterval
+            content.volume = order.volume
+            content.price = 'PRICEALGO_BID' if order.direction == 'long' else 'PIRCEALGO_ASK'
+            content.algotype = order.algotype 
+            content.offset = order.offset
+            content.strategyname = order.strategyname
+            content.size = ordre.size
+            content.wttime = order.wttime
+            content.signalid = order.signalid
+            content.pricetype = 'PRICETYPE_LIMITPRICE'
+            content.orderstyle = order.orderstyle
+            content.maxcancelnum = order.maxcancelnum
+            self.sender.send(orderlist.SerializeToString())
+            
         
     def _validate_order(self, order, account, quotation, strategy_name):
         """Check whether order is validate
