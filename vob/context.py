@@ -174,12 +174,12 @@ class Context(object):
         socket.connect(mdaddr)
         self.register()
 
+        self.event_bus.pop_listeners(EVENT.INIT_EVENT, self)
         while True:
             ticker = socket.recv()
             data = TickData()
             data.ParseFromString(ticker)
             bar = bars[data.symbol]
-            print(bar)
             
             bar.loc[bar.index.size] = [None for x in bar.columns]
             bar.loc[bar.index.size-1,'symbol'] = data.symbol
@@ -213,7 +213,7 @@ class Context(object):
             bardata.volume = int(data.volume)
             
             if data.symbol in objects:
-                self.event_bus.pop_listeners(EVENT.NORMAL_TICKER_EVENT, bardata)
+                self.event_bus.pop_listeners(EVENT.NORMAL_TICKER_EVENT, self, bardata)
                 
     
     def run(self):

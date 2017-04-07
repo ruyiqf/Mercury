@@ -12,7 +12,43 @@ class Order(object):
         self._algotype = None
         self._orderstyle = None
         self._maxcancelnum = 0
-        
+        self._sinterval = 0
+        self._signalid = None
+        self._size = 0
+        self._wttime = 0
+
+    @property
+    def size(self):
+        return self._size
+    @size.setter
+    def size(self, value):
+        if isinstance(value, int):
+            self._size = value
+
+    @property
+    def wttime(self):
+        return self._wttime
+    @wttime.setter
+    def wttime(self, value):
+        if isinstance(value, int):
+            self._wttime = value
+
+    @property
+    def signalid(self):
+        return self._signalid
+    @signalid.setter
+    def signalid(self, value):
+        if isinstance(value, str):
+            self._signalid = value
+
+    @property
+    def sinterval(self):
+        return self._sinterval
+    @sinterval.setter
+    def sinterval(self, value):
+        if isinstance(value, int):
+            self._sinterval = value
+
     @property
     def strategy_name(self):
         return self._strategy_name

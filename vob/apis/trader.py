@@ -17,11 +17,11 @@ class Trader(object):
         :quotation: only meaningful under mock
         :trade_mode: revervation of switching between mock-trading and real-trading
         """
-        if self._trade_mod == 'mock':
+        if self._trade_mode == 'mock':
             if self._validate_order(order, account, quotation, strategy_name):
                 account.portfolios[strategy_name].process_order(order)
 
-        elif self._trade_mod == 'real':
+        elif self._trade_mode == 'real':
             orderlist = OrderList()
             content = orderlist.orders.add()
             content.instrument = order.instrument
@@ -32,7 +32,7 @@ class Trader(object):
             content.algotype = order.algotype 
             content.offset = order.offset
             content.strategyname = order.strategyname
-            content.size = ordre.size
+            content.size = order.size
             content.wttime = order.wttime
             content.signalid = order.signalid
             content.pricetype = 'PRICETYPE_LIMITPRICE'
