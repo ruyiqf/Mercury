@@ -16,6 +16,15 @@ class Order(object):
         self._signalid = None
         self._size = 0
         self._wttime = 0
+        self._clientid = None
+
+    @property
+    def clientid(self):
+        return self._clientid
+    @clientid.setter
+    def clientid(self, value):
+        if isinstance(value, str):
+            self._clientid = value
 
     @property
     def size(self):
