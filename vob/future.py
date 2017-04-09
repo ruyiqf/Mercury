@@ -104,7 +104,7 @@ class CommodityFuture(object):
             context.frequency = config.frequency
             context.results_q = self.results_q
             context.quotation = Quotation()
-            context.trader = Trader(context.trde_mode)
+            context.trader = Trader(context.trade_mode)
             context.strategy_name = elt.split('.')[0]
             handle_ctx = Thread(target=context.run)
             handle_ctx.setDaemon(True)
