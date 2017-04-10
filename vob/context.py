@@ -180,7 +180,11 @@ class Context(object):
             data = TickData()
             data.ParseFromString(ticker)
             bar = bars[data.symbol]
-            
+            if bar.columns.size == 0:
+                bar = pd.DataFrame(columns=['symbol','open','exchange','lastprice','high',
+                               'close','low','volume','bid','ask','date',
+                               'time','oi','uppderlimit','lowderlimit',
+                               'bidvolume','askvolume','chg','pct_chg'])
             bar.loc[bar.index.size] = [None for x in bar.columns]
             bar.loc[bar.index.size-1,'symbol'] = data.symbol
             bar.loc[bar.index.size-1,'open'] = self._is_price_reasonable(data.openPrice)
@@ -208,8 +212,8 @@ class Context(object):
             bardata.bidvolume = int(data.bidVolume1)
             bardata.askvolume = int(data.askVolume1)
             bardata.date = datetime.datetime.now()
-            bardata.margin_ratio = self.data_proxy.instruments[bardata.instrument].margin_rate
-            bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
+            #bardata.margin_ratio = self.data_proxy.instruments[bardata.instrument].margin_rate
+            #bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
             bardata.volume = int(data.volume)
             
             if data.symbol in objects:

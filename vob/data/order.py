@@ -103,8 +103,7 @@ class Order(object):
         return self._price
     @price.setter
     def price(self, value):
-        if isinstance(value, float):
-            self._price = value
+        self._price = value
 
     @property
     def direction(self):

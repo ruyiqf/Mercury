@@ -12,7 +12,7 @@ class SenderTrade(object):
         self._socket.connect(self._conf['tdwatcher'])
     
     def send(self, msg):
-        self._socket.send_string(msg)
+        self._socket.send(msg)
 
         
          

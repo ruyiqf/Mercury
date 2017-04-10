@@ -28,7 +28,7 @@ class Trader(object):
             content.direction = 'dlong' if order.direction == 'long' else 'dshort'
             content.sinterval = order.sinterval
             content.volume = order.volume
-            content.price = 'PRICEALGO_BID' if order.direction == 'long' else 'PIRCEALGO_ASK'
+            content.price = 'PRICEALGO_BID' if order.direction == 'long' else 'PRICEALGO_ASK'
             content.algotype = order.algotype 
             content.offset = order.offset
             content.strategyname = order.strategyname
@@ -38,6 +38,7 @@ class Trader(object):
             content.pricetype = 'PRICETYPE_LIMITPRICE'
             content.orderstyle = order.orderstyle
             content.maxcancelnum = order.maxcancelnum
+            content.clientid = order.clientid
             self.sender.send(orderlist.SerializeToString())
             
         
