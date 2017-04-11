@@ -9,7 +9,6 @@ from .event import EventSource, EventBus, EVENT, Event
 from .apis import Trader, Quotation 
 from .exception import SearchError
 from .receiver import ReceiverQuotation 
-from .protocol import TickData
 
 class Context(object):
     """Need say something Wow, will replace environment object"""
@@ -166,6 +165,7 @@ class Context(object):
 
     def firm_bargain(self):
         """Using for real trade with trading system"""
+        from .protocol import TickData
         bars = self.data_proxy.get_all_trading_bars(self.start_date, self.end_date)
         print('after getting bars')
         rq = ReceiverQuotation()

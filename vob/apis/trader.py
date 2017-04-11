@@ -1,6 +1,5 @@
 #coding:utf-8
 
-from .quant_client_sys_pb2 import ClientReqOrder, OrderList
 from .sender_trade import SenderTrade
 
 class Trader(object):
@@ -22,6 +21,7 @@ class Trader(object):
                 account.portfolios[strategy_name].process_order(order)
 
         elif self._trade_mode == 'real':
+            from .quant_client_sys_pb2 import ClientReqOrder, OrderList
             orderlist = OrderList()
             content = orderlist.orders.add()
             content.instrument = order.instrument
