@@ -16,7 +16,7 @@
 import click
 import os
 
-from vob import CommodityFuture
+from vob import CommodityFuture, CompanyStock
 from vob import Config
 
 @click.group()
@@ -48,13 +48,19 @@ def update_bundle(data_bundle_path):
 @click.option('-ic', '--initial-cash', type=click.FLOAT)
 @click.option('-fq', '--frequency', default=None, type=click.STRING)
 @click.option('-o', '--results-path', type=click.Path(exists=True))
+@click.option('-a', '--asset', default='future', type=click.Choice(['future', 'stock']))
 def run(**kwargs):
     """
     Start to run a strategy
     """
-    cf = CommodityFuture()
-    conf = Config(kwargs)
-    cf.run(conf)
+    if kwargs['asset'] == 'future':
+        cf = CommodityFuture()
+        conf = Config(kwargs)
+        cf.run(conf)
+    elif kwargs['asset'] == 'stock':
+        cs = CompanyStock()
+        conf = Config(kwargs)
+        cs.run(conf)
 
 @cli.command()
 @click.help_option('-h', '--help')
@@ -64,13 +70,19 @@ def run(**kwargs):
 @click.option('-e', '--end-date', type=click.STRING)
 @click.option('-ic', '--initial-cash', type=click.FLOAT)
 @click.option('-fq', '--frequency', default=None, type=click.STRING)
+@click.option('-a', '--asset', default='future', type=click.Choice(['future', 'stock']))
 def firm_bargain(**kwargs):
     """
     Actually use stratregy trading with system
     """
-    cf = CommodityFuture()
-    conf = Config(kwargs)
-    cf.firm_bargain(conf)
+    if kwargs['asset'] == 'future':
+        cf = CommodityFuture()
+        conf = Config(kwargs)
+        cf.firm_bargain(conf)
+    elif kwargs['asset'] == 'stock':
+        cs = CompanyStock()
+        conf = Config(kwargs)
+        cs.firm_bargain(conf)
 
 if __name__ == '__main__':
     entry_point()
