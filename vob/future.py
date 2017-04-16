@@ -28,6 +28,7 @@ from .data import DataProxy, Account
 from .loader import FileStrategyLoader
 from .event import EventSource, EventBus
 from .apis import RiskCal, Quotation, Trader
+from .collector import CreateBasicInstruments
 
 from threading import Thread
 from queue import Queue
@@ -112,6 +113,32 @@ class CommodityFuture(object):
 
         self.recv_results()
 
+    def _check_timestamp(self, lasttime_ts):
+        """According to downloading last timestamp calculate lacked daily list
+        :lasttime_ts: lastest timestamp
+        """
+        ret = list()
+        day = datetime.date.today()
+        index = lasttime_ts + datetime.timedelta(days=1)
+        while index <= day:
+            ret.append(index)
+            index = index + datetime.timedelta(days=1)
+        return ret
+         
+    def _convert_bcolz2dfmap(self, bcolzfile, dfmap):
+        """Convert bcolz file to dataframe map
+        :bcolzfile: Raw bcolz file
+        :dfmap: default dataframe dict
+        """
+        try:
+            table = bcolz.open(os.path.join(data_bundle_path, 'futures.bcolz', 'r')
+            index = table.attrs['line_map']
+            for elt in index:
+                s,e = index[elt]
+                dfmap[elt] = pd.DataFrame(table[s:e])
+        except Exception as e:
+            traceback.print_exc()
+        
     def update_bundle(self, data_bundle_path=None, confirm=True):
         default_bundle_path = os.path.abspath(os.path.expanduser('~/.mercury/bundle/'))
         if data_bundle_path is None:
@@ -130,29 +157,68 @@ Are you sure to continue?""".format(data_bundle_path=data_bundle_path), abort=Tr
             click.echo("Will download data in this {}".format(data_bundle_path))
         
         day = datetime.date.today()
-        tmp = os.path.join(tempfile.gettempdir(), 'mercury.bundle')
+        
+        #Record previous dataframe map aimed to increase daily download data
+        old_table = collections.defaultdict(pd.DataFrame)
+        
+        if os.path.exists(os.path.join(default_bundle_path, 'downloadtime')):
+            with open(os.path.join(default_bundle_path, 'downloadtime')) as f:
+                last_time_stamp = datetime.datetime.strptime(f.readlines()[0].strip(), '%Y-%m-%d')
+            lack_time_list = self._check_timestamp(datetime.date(last_time_stamp.year,
+                                                                 last_time_stamp.month,
+                                                                 last_time_stamp.day))
 
-        while True:
-            url = 'http://www.ruyiqf.com:8083/bundles_v2/mercury_%04d%02d%02d.tar.bz2' % (day.year, day.month, day.day)
+            self._convert_bcolz2dfmap(os.path.join(data_bundle_path, 'futures.bcolz'), old_table)
+        else:
+            #Downloadtime file not exist will compensate all time stamp from 2017-04-04 to now
+            lack_time_list = list()
+            start_day = datetime.date(2017,4,4)
+            lack_time_list.append(start_day)
+            while start_day <= datetime.date.today():
+                start_day = start_day + datetime.timedelta(days=1)
+                lack_time_list.append(start_day)
+                
+        if len(lack_time_list) == 0:
+            click.echo('Already updated all, it is newest data')
+            return
+
+
+        for ts in lack_time_list:
+            url = 'http://www.ruyiqf.com:8083/bundles_v2/mercury_%04d%02d%02d.tar.bz2' % (ts.year, ts.month, ts.day)
             click.echo(url)
             r = requests.get(url, stream=True)
             if r.status_code != 200:
-                day = day - datetime.timedelta(days=1)
                 continue
-
+            tmp = os.path.join(tempfile.gettempdir(), 'mercury.bundle')
             out = open(tmp, 'wb')
             total_length = int(r.headers.get('content-length'))
-
             with click.progressbar(length=total_length, label=('downloading ...')) as bar:
                 for data in r.iter_content(chunk_size=8192):
                     bar.update(len(data))
                     out.write(data)
+            tar = tarfile.open(tmp, 'r:bz2')
+            tmpdata = os.path.join('.', 'tmpdata') 
+            os.makedirs(tmpdata)
+            tar.extractall(tmpdata)
+            tmpdfmap = collections.defaultdict(pd.DataFrame)
+            self._convert_bcolz2dfmap(os.path.join(tmpdata, 'futures.bcolz'), tmpdfmap)
+            #Merge two dataframe map 
+            for elt in tmpdfmap:
+                if elt in old_table:
+                    old_table[elt] = pd.concat(old_table[elt],
+                                               tmpdfmap[elt],
+                                               ignore_index=True)
+                else:
+                    old_table[elt] = tmpdfmap[elt]
             out.close()
-            break
-
-        shutil.rmtree(data_bundle_path, ignore_errors=True)
-        os.makedirs(data_bundle_path)
-        tar = tarfile.open(tmp, 'r:bz2')
-        tar.extractall(data_bundle_path)
-        tar.close()
-        os.remove(tmp)
+            tar.close()
+            os.remove(tmp)
+            
+        if os.path.exists(data_bundle_path):
+            shutil.rmtree(data_bundle_path)
+            os.makedir(data_bundle_path)
+        else:
+            os.makedir(data_bundle_path)
+        
+        cbi = CreateBasicInstruments()
+        cbi.generate_bcolzdata(old_table, data_bundle_path)
