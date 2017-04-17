@@ -1,6 +1,7 @@
 #coding:utf-8
 import datetime
 import time
+import math
 import pandas as pd
 import numpy as np
 from queue import Queue
@@ -163,6 +164,12 @@ class Context(object):
         """Filter abnormal price when receiving quotation"""
         return (0 if len(str(price)) > Context.LONG_DATA_LEN else price)
 
+    def _extract_ctid(self, instrument):
+        """Extract contracts name underlying symbol
+        :instrument: Contracts name of string type
+        """
+        return instrument[0:-4] if instrument[-4].isdigit() else instrument[0:-3]
+
     def firm_bargain(self):
         """Using for real trade with trading system"""
         from .protocol import TickData
@@ -212,8 +219,9 @@ class Context(object):
             bardata.bidvolume = int(data.bidVolume1)
             bardata.askvolume = int(data.askVolume1)
             bardata.date = datetime.datetime.now()
-            #bardata.margin_ratio = self.data_proxy.instruments[bardata.instrument].margin_rate
-            #bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
+            ctid = self._extract_ctid(bardata.instrument)
+            bardata.margin_ratio = self.data_proxy.instruments[ctid].margin_rate
+            bardata.multiplier = self.data_proxy.instruments[ctid].contract_multiplier
             bardata.volume = int(data.volume)
             
             if data.symbol in objects:
@@ -239,9 +247,10 @@ class Context(object):
                 bardata.instrument = data.symbol.values[0]
                 bardata.lastprice = data.close.values[0]
                 bardata.date = pd.to_datetime(data.date.values[0]).to_pydatetime()
-                bardata.margin_ratio = self.data_proxy.instruments[bardata.instrument].margin_rate
-                bardata.multiplier = self.data_proxy.instruments[bardata.instrument].contract_multiplier
-                bardata.volume = int(data.volume.values[0])
+                ctid = self._extract_ctid(bardata.instrument)
+                bardata.margin_ratio = self.data_proxy.instruments[ctid].margin_rate
+                bardata.multiplier = self.data_proxy.instruments[ctid].contract_multiplier
+                bardata.volume = (0 if math.isnan(data.volume.values[0]) else int(data.volume.values[0]))
             except SearchError as e:
                 print(e)
             if event.event_type == EVENT.SETTLEMENT_EVENT:
