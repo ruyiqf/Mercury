@@ -22,6 +22,9 @@ import requests
 import shutil
 import time
 import traceback
+import collections
+import pandas as pd
+import bcolz
 
 from .context import Context
 from .data import DataProxy, Account
@@ -131,7 +134,7 @@ class CommodityFuture(object):
         :dfmap: default dataframe dict
         """
         try:
-            table = bcolz.open(os.path.join(data_bundle_path, 'futures.bcolz', 'r')
+            table = bcolz.open(bcolzfile)
             index = table.attrs['line_map']
             for elt in index:
                 s,e = index[elt]
@@ -205,20 +208,25 @@ Are you sure to continue?""".format(data_bundle_path=data_bundle_path), abort=Tr
             #Merge two dataframe map 
             for elt in tmpdfmap:
                 if elt in old_table:
-                    old_table[elt] = pd.concat(old_table[elt],
-                                               tmpdfmap[elt],
+                    old_table[elt] = pd.concat([old_table[elt],tmpdfmap[elt]],
                                                ignore_index=True)
                 else:
                     old_table[elt] = tmpdfmap[elt]
             out.close()
             tar.close()
+            shutil.rmtree(tmpdata)
             os.remove(tmp)
             
         if os.path.exists(data_bundle_path):
             shutil.rmtree(data_bundle_path)
-            os.makedir(data_bundle_path)
+            os.makedirs(data_bundle_path)
         else:
-            os.makedir(data_bundle_path)
+            os.makedirs(data_bundle_path)
         
         cbi = CreateBasicInstruments()
-        cbi.generate_bcolzdata(old_table, data_bundle_path)
+        cbi.generate_bcolzdata(old_table, os.path.join(data_bundle_path, ''))
+
+        #Update timestamp
+        with open(os.path.join(data_bundle_path, 'downloadtime'), 'w') as f:
+            f.write(datetime.datetime.now().strftime('%Y-%m-%d'))
+        os.remove(os.path.join('.', 'tmp.csv'))
