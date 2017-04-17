@@ -264,7 +264,9 @@ class CreateBasicInstruments(object):
             contract = tmplist[0]
             print(elt)
             df = pd.read_csv(os.path.join('%s%s'%(csvpath, elt)))
-            df = df.dropna(how='all')
+            df = df.dropna(how='all', subset=['open', 'high', 'low',
+                                              'close', 'volume', 'amt',
+                                              'chg', 'pct_chg', 'oi'])
             df = df.reset_index()
             ctid = contract[0:-4] if contract[-4].isdigit() else contract[0:-3]
             df['exchange'] = self.ctidmap[ctid]['exchange']
