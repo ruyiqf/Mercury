@@ -1,4 +1,5 @@
 #coding:utf-8
+import click
 import datetime
 import time
 import math
@@ -235,28 +236,29 @@ class Context(object):
         self._bars = bars
 
         trading_date_bar = self.data_proxy.get_trading_dates(bars)
-         
         self.register()
-        for event in self.event_source.events(trading_date_bar, frequency=self.frequency):
-            if event.event_type == EVENT.INIT_EVENT:
-                self.event_bus.pop_listeners(event.event_type, self)
-                continue
-            try:
-                data = self._search_by_date_from_bars(event.data['date'], event.data['value'], bars)
-                bardata = BarData()
-                bardata.instrument = data.symbol.values[0]
-                bardata.lastprice = data.close.values[0]
-                bardata.date = pd.to_datetime(data.date.values[0]).to_pydatetime()
-                ctid = self._extract_ctid(bardata.instrument)
-                bardata.margin_ratio = self.data_proxy.instruments[ctid].margin_rate
-                bardata.multiplier = self.data_proxy.instruments[ctid].contract_multiplier
-                bardata.volume = (0 if math.isnan(data.volume.values[0]) else int(data.volume.values[0]))
-            except SearchError as e:
-                print(e)
-            if event.event_type == EVENT.SETTLEMENT_EVENT:
-                self.event_bus.pop_listeners(event.event_type, self._ret_list, bardata)
-            elif event.event_type == EVENT.NORMAL_TICKER_EVENT:
-                self.event_bus.pop_listeners(event.event_type, self, bardata)
-
+        with click.progressbar(length=trading_date_bar.size, label=('Running ...')) as bar:
+            for event in self.event_source.events(trading_date_bar, frequency=self.frequency):
+                if event.event_type == EVENT.INIT_EVENT:
+                    self.event_bus.pop_listeners(event.event_type, self)
+                    continue
+                try:
+                    data = self._search_by_date_from_bars(event.data['date'], event.data['value'], bars)
+                    bardata = BarData()
+                    bardata.instrument = data.symbol.values[0]
+                    bardata.lastprice = data.close.values[0]
+                    bardata.date = pd.to_datetime(data.date.values[0]).to_pydatetime()
+                    ctid = self._extract_ctid(bardata.instrument)
+                    bardata.margin_ratio = self.data_proxy.instruments[ctid].margin_rate
+                    bardata.multiplier = self.data_proxy.instruments[ctid].contract_multiplier
+                    bardata.volume = (0 if math.isnan(data.volume.values[0]) else int(data.volume.values[0]))
+                except SearchError as e:
+                    print(e)
+                if event.event_type == EVENT.SETTLEMENT_EVENT:
+                    self.event_bus.pop_listeners(event.event_type, self._ret_list, bardata)
+                elif event.event_type == EVENT.NORMAL_TICKER_EVENT:
+                    self.event_bus.pop_listeners(event.event_type, self, bardata)
+                bar.update(1)
+        
         self._results_q.put((self._strategy_name, self._ret_list))
         end = time.time()
