@@ -30,13 +30,19 @@ def entry_point():
 
 @cli.command()
 @click.option('-d', '--data-bundle-path', default=os.path.expanduser("~/.mercury"), type=click.Path(file_okay=False))
-def update_bundle(data_bundle_path):
+@click.option('-a', '--asset', default='future', type=click.Choice(['future', 'stock']))
+def update_bundle(**kwargs):
     """
     Sync Data Bundle of commodity future data specially
     """
     click.echo('will start from here')
-    cf = CommodityFuture()
-    cf.update_bundle(data_bundle_path=data_bundle_path)
+    if kwargs['asset'] == 'future':
+        cf = CommodityFuture()
+        cf.update_bundle(data_bundle_path=kwargs['data_bundle_path'])
+    elif kwargs['asset'] == 'stock':
+        cs = CompanyStock()
+        cs.update_bundle(data_bundle_path=kwargs['data_bundle_path'])
+        
 
 @cli.command()
 @click.help_option('-h', '--help')
