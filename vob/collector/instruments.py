@@ -51,6 +51,25 @@ class CreateBasicInstruments(object):
             for x in ret:
                 f.write(x+'\n')
         
+    def independent_compress_daily_file(self, path):
+        self.parse_daily_ticker(path) 
+        daily_ticker = dict(list(self.whole_q_df.groupby('symbol')))
+        all_key = daily_ticker.keys()
+        df_dict = collections.defaultdict(pd.DataFrame)
+        for elt in all_key:
+            df_dict[elt] = daily_ticker[elt]
+            
+        self.generate_bcolzdata(df_dict, './')
+
+        #Compressing .tar.bz2 file with timestamp
+        ts = os.path.basename(path).split('.')[1]
+        ts = ts.replace('-', '')
+        archive = tarfile.open('mercury_'+ts+'.tar.bz2','w:bz2')
+        archive.debug = 1
+        archive.add('./futures.bcolz')
+        archive.add('./instruments.pk')
+        archive.close()
+
     def parse_daily_ticker(self, path):
         """Parse data from daily server record data
         :path: Daily ticker data path include filename
@@ -88,7 +107,7 @@ class CreateBasicInstruments(object):
         self.whole_q_df = self.whole_q_df.drop(['preclose'], axis=1)
         
     def _convert_time_format(self, s):
-        return Series(['{}-{}-{}'.format(x[0:4],x[4:6],x[6:]) for x in s.values])
+        return Series(['{}-{}-{}'.format(x[0:4],x[5:7],x[8:]) for x in s.values])
 
     def infusion_wind_daily_once(self, path, csvpath, outpath):
         """Merge wind daily ticker once time
@@ -118,7 +137,7 @@ class CreateBasicInstruments(object):
             else:
                 self.whole_wind_q_df[elt] = daily_ticker[elt]
         print(self.whole_wind_q_df)
-        self._generate_bcolzdata(self.whole_wind_q_df, outpath)
+        self.generate_bcolzdata(self.whole_wind_q_df, outpath)
 
         #Debug code
         program_edtime = time.time()
@@ -133,10 +152,10 @@ class CreateBasicInstruments(object):
         final_instrupk = collections.defaultdict(dict)
         for elt in whole_df:
             ctid = elt[0:-4] if elt[-4].isdigit() else elt[0:-3]
-            final_instrupk[elt] = self.ctidmap[ctid]
-            final_instrupk[elt]['order_book_id'] = elt
-            final_instrupk[elt]['de_listed_date'] = list(whole_df[elt].date)[0]
-            final_instrupk[elt]['listed_date'] = list(whole_df[elt].date)[-1]
+            final_instrupk[ctid] = self.ctidmap[ctid]
+            final_instrupk[ctid]['order_book_id'] = elt
+            final_instrupk[ctid]['de_listed_date'] = list(whole_df[elt].date)[0]
+            final_instrupk[ctid]['listed_date'] = list(whole_df[elt].date)[-1]
 
         output = open(outpath+'instruments.pk', 'wb')
         pickle.dump(final_instrupk, output, -1)
@@ -170,14 +189,14 @@ class CreateBasicInstruments(object):
                     os.makedirs(outpath)
                 else:
                     os.makedirs(outpath)
-                self._generate_bcolzdata(old_table, outpath)
+                self.generate_bcolzdata(old_table, outpath)
             except Exception as e:
                 traceback.print_exc()
         else:
             print('Data file not exists')
             return 
         
-    def _generate_bcolzdata(self, whole_dict, outpath):
+    def generate_bcolzdata(self, whole_dict, outpath):
         """Generate bcolzdata and instrument pickle file
         :whole_dict: raw data
         :outpath: output data path
@@ -245,7 +264,9 @@ class CreateBasicInstruments(object):
             contract = tmplist[0]
             print(elt)
             df = pd.read_csv(os.path.join('%s%s'%(csvpath, elt)))
-            df = df.dropna()
+            df = df.dropna(how='all', subset=['open', 'high', 'low',
+                                              'close', 'volume', 'amt',
+                                              'chg', 'pct_chg', 'oi'])
             df = df.reset_index()
             ctid = contract[0:-4] if contract[-4].isdigit() else contract[0:-3]
             df['exchange'] = self.ctidmap[ctid]['exchange']
@@ -267,7 +288,7 @@ def main():
     #output = open('instruments.pk', 'wb')
     #pickle.dump(cb.ctidmap, output, -1)
     #cb.parse_daily_ticker()
-    cb.accumulate_wind_ticker('/Users/ruyiqf/winddata/csv/', '/Users/ruyiqf/winddata/')
+    #cb.accumulate_wind_ticker('/Users/ruyiqf/winddata/csv/', '/Users/ruyiqf/winddata/')
 
 if __name__ == '__main__':
     main()

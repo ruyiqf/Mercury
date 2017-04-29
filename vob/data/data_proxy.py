@@ -70,7 +70,7 @@ class DataProxy(object):
     
     def get_all_trading_bars(self, start_date, end_date):
         ret = collections.defaultdict(pd.DataFrame)
-        for elt in self._instruments.keys():
+        for elt in self._instruments_pos.keys():
             ret[elt] = self._get_one_trading_bar(elt, start_date, end_date)
         return ret
 
