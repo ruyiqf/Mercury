@@ -10,7 +10,7 @@ class Account(object):
     
     def __init__(self, **kwargs):
         """Simulator account data structure, can include serveral portfolios
-        :kwargs: initcash, start_date, end_date [slippage]
+        :kwargs: initcash, start_date, end_date [slippage], assets
         """
         self._init_cash = kwargs.get('initcash')
         self._start_date = kwargs.get('start_date')
@@ -20,7 +20,6 @@ class Account(object):
 
         #Portfolios seperated from strategies
         self._portfolios = collections.defaultdict(lambda:Portfolio(self))
-        
         self._static_equity = self._init_cash
         self._dynamic_equity = self._init_cash
         self._total_pnl = 0.0
@@ -28,7 +27,7 @@ class Account(object):
         self._total_commission = 0.0
         self._available_cash = self._init_cash
         self._risk_measure = 0
-
+          
     @property
     def init_cash(self):
         return self._init_cash
@@ -80,7 +79,6 @@ class Account(object):
         """
         for elt in self.portfolios:
             self.portfolios[elt].process_settle(bardata)
-
         retlist.append((bardata.date, SettleData(copy.copy(self.__dict__))))
 
     def update_account(self):

@@ -12,13 +12,16 @@ from .instruments import Instrument
 
 class DataProxy(object):
     """Read bcolz data and return data bar"""
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, assets='futures'):
         self.root_dir = root_dir
         bcolz.defaults.out_flavor = "numpy"
-        self._futures_bar = bcolz.open(os.path.join(root_dir, 'futures.bcolz'))
-        self._instruments = {k: Instrument(v)
-                             for k,v in pickle.load(open(os.path.join(root_dir, 'instruments.pk'), 'rb')).items()}
-        self._instruments_pos = self._futures_bar.attrs['line_map']
+        self._assets_bar = bcolz.open(os.path.join(root_dir, assets+'.bcolz'))
+        if assets == 'futures': 
+            self._instruments = {k: Instrument(v)
+                                 for k,v in pickle.load(open(os.path.join(root_dir, 'instruments.pk'), 'rb')).items()}
+        elif assets == 'stocks':
+            self._instruments = [Instrument(i) for i in pickle.load(open(os.path.join(root_dir, 'instruments.pk'), 'rb'))]
+        self._instruments_pos = self._assets_bar.attrs['line_map']
     
     @property
     def instruments(self):
@@ -27,7 +30,7 @@ class DataProxy(object):
     def _get_one_trading_bar(self, symbol, start_date, end_date):
         try:
             l, r = self._instruments_pos[symbol]
-            symbol_bar = self._futures_bar[l:r]
+            symbol_bar = self._assets_bar[l:r]
             columns = ['date','symbol','open','exchange','lastprice','high','low','volume',
                        'bid','ask','uppderlimit','lowderlimit','bidvolume',
                        'askvolume','amt','chg','pct_chg','oi','close']

@@ -30,16 +30,16 @@ def entry_point():
 
 @cli.command()
 @click.option('-d', '--data-bundle-path', default=os.path.expanduser("~/.mercury"), type=click.Path(file_okay=False))
-@click.option('-a', '--asset', default='future', type=click.Choice(['future', 'stock']))
+@click.option('-a', '--asset', default='futures', type=click.Choice(['futures', 'stocks']))
 def update_bundle(**kwargs):
     """
     Sync Data Bundle of commodity future data specially
     """
     click.echo('will start from here')
-    if kwargs['asset'] == 'future':
+    if kwargs['asset'] == 'futures':
         cf = CommodityFuture()
         cf.update_bundle(data_bundle_path=kwargs['data_bundle_path'])
-    elif kwargs['asset'] == 'stock':
+    elif kwargs['asset'] == 'stocks':
         cs = CompanyStock()
         cs.update_bundle(data_bundle_path=kwargs['data_bundle_path'])
         
@@ -54,16 +54,16 @@ def update_bundle(**kwargs):
 @click.option('-ic', '--initial-cash', type=click.FLOAT)
 @click.option('-fq', '--frequency', default=None, type=click.STRING)
 @click.option('-o', '--results-path', type=click.Path(exists=True))
-@click.option('-a', '--asset', default='future', type=click.Choice(['future', 'stock']))
+@click.option('-a', '--asset', default='futures', type=click.Choice(['futures', 'stocks']))
 def run(**kwargs):
     """
     Start to run a strategy
     """
-    if kwargs['asset'] == 'future':
+    if kwargs['asset'] == 'futures':
         cf = CommodityFuture()
         conf = Config(kwargs)
         cf.run(conf)
-    elif kwargs['asset'] == 'stock':
+    elif kwargs['asset'] == 'stocks':
         cs = CompanyStock()
         conf = Config(kwargs)
         cs.run(conf)
@@ -76,16 +76,16 @@ def run(**kwargs):
 @click.option('-e', '--end-date', type=click.STRING)
 @click.option('-ic', '--initial-cash', type=click.FLOAT)
 @click.option('-fq', '--frequency', default=None, type=click.STRING)
-@click.option('-a', '--asset', default='future', type=click.Choice(['future', 'stock']))
+@click.option('-a', '--asset', default='futures', type=click.Choice(['futures', 'stocks']))
 def firm_bargain(**kwargs):
     """
     Actually use stratregy trading with system
     """
-    if kwargs['asset'] == 'future':
+    if kwargs['asset'] == 'futures':
         cf = CommodityFuture()
         conf = Config(kwargs)
         cf.firm_bargain(conf)
-    elif kwargs['asset'] == 'stock':
+    elif kwargs['asset'] == 'stocks':
         cs = CompanyStock()
         conf = Config(kwargs)
         cs.firm_bargain(conf)

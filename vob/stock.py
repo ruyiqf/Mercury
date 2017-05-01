@@ -23,6 +23,11 @@ import shutil
 import click
 import six
 
+from .context import Context
+from .loader import FileStrategyLoader
+from .data import DataProxy, Account
+from .event import EventSource, EventBus
+
 class CompanyStock(object):
     
     def __init__(self):
@@ -74,8 +79,29 @@ Are you sure to continue?""").format(data_bundle_path=data_bundle_path), abort=T
         tar.close()
         os.remove(tmp)
         six.print_(("Data bundle download successfully in {bundle_path}").format(bundle_path=data_bundle_path))
-        
-            
-            
-        
 
+    def run(self, config):
+        """Run Strategy main function
+        """
+        allfiles = os.listdir(os.path.abspath(config.strategy_dir))
+        fsl = FileStrategyLoader()
+        data_proxy = DataProxy(os.path.abspath(config.data_bundle_path), assets=config.asset) 
+        for elt in allfiles:
+            source = fsl.load(os.path.abspath(config.data_bundle_path))
+            context = Context()
+            context.scope = source
+            context.data_proxy = data_proxy
+            context.account = Account(initcash=config.initial_cash, start_date=config.start_date, end_date=config.end_date)
+            context.event_source = EventSource()
+            context.event_bus = EventBus()
+            context.start_date = config.start_date
+            context.end_date = config.end_date
+            context.frequency = config.frequency
+            context.results_q = self.results_q
+            context.quotation = Quotation()
+            context.trader = Trader(context.trade_mode)
+            context.strategy_name = elt.split('.')[0]
+            handle_ctx = Thread(target=context.run)
+            handle_ctx.setDaemon(True)
+            handle_ctx.start()
+        
